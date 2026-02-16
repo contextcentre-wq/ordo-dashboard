@@ -12,7 +12,7 @@ const Audiences: React.FC = () => {
   ];
 
   return (
-    <div className="p-6 lg:p-8">
+    <div className="p-4 md:p-6 lg:p-8">
       <Header />
       <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -20,11 +20,11 @@ const Audiences: React.FC = () => {
             <p className="text-gray-500 text-sm mt-1">Список лидов и клиентов из всех источников</p>
         </div>
         <div className="flex items-center gap-3">
-             <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50">
+             <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 min-h-[44px]">
                 <Download className="w-4 h-4" />
                 <span>Экспорт</span>
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-ordo-green text-white rounded-lg text-sm font-medium hover:bg-ordo-darkGreen shadow-sm shadow-green-200">
+            <button className="flex items-center gap-2 px-4 py-2 bg-ordo-green text-white rounded-lg text-sm font-medium hover:bg-ordo-darkGreen shadow-sm shadow-green-200 min-h-[44px]">
                 <span>Создать сегмент</span>
             </button>
         </div>
@@ -57,10 +57,10 @@ const Audiences: React.FC = () => {
                             <input type="checkbox" className="rounded border-gray-300 text-ordo-green focus:ring-ordo-green bg-white accent-ordo-green" />
                         </th>
                         <th className="px-6 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Имя / Компания</th>
-                        <th className="px-6 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Источник</th>
+                        <th className="px-6 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider hidden sm:table-cell">Источник</th>
                         <th className="px-6 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Статус</th>
                         <th className="px-6 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">LTV</th>
-                        <th className="px-6 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Дата</th>
+                        <th className="px-6 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider hidden md:table-cell">Дата</th>
                         <th className="px-6 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider"></th>
                     </tr>
                 </thead>
@@ -76,7 +76,7 @@ const Audiences: React.FC = () => {
                                     <span className="text-xs text-gray-400">{user.email}</span>
                                 </div>
                             </td>
-                            <td className="px-6 py-4">
+                            <td className="px-6 py-4 hidden sm:table-cell">
                                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-800">
                                     {user.source}
                                 </span>
@@ -94,7 +94,7 @@ const Audiences: React.FC = () => {
                             <td className="px-6 py-4 text-sm font-mono text-gray-900 font-medium">
                                 {user.ltv}
                             </td>
-                            <td className="px-6 py-4 text-sm text-gray-500">
+                            <td className="px-6 py-4 text-sm text-gray-500 hidden md:table-cell">
                                 {user.date}
                             </td>
                             <td className="px-6 py-4 text-right">

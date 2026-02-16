@@ -11,14 +11,14 @@ const Sources: React.FC = () => {
   ];
 
   return (
-    <div className="p-6 lg:p-8">
+    <div className="p-4 md:p-6 lg:p-8">
       <Header />
-      <div className="mb-8 flex justify-between items-center">
+      <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Источники трафика</h1>
           <p className="text-gray-500 text-sm mt-1">Управляйте подключениями к рекламным кабинетам</p>
         </div>
-        <button className="flex items-center space-x-2 bg-ordo-green text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-ordo-darkGreen transition-colors">
+        <button className="flex items-center space-x-2 bg-ordo-green text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-ordo-darkGreen transition-colors min-h-[44px]">
           <Plus className="w-4 h-4" />
           <span>Добавить источник</span>
         </button>

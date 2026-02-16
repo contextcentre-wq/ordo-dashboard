@@ -8,7 +8,7 @@ interface SettingsProps {
 
 const Settings: React.FC<SettingsProps> = ({ onLogout }) => {
   return (
-    <div className="p-6 lg:p-8">
+    <div className="p-4 md:p-6 lg:p-8">
       <Header />
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Настройки аккаунта</h1>
 
@@ -16,19 +16,19 @@ const Settings: React.FC<SettingsProps> = ({ onLogout }) => {
         {/* Settings Nav */}
         <div className="md:col-span-1">
             <nav className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <a href="#" className="flex items-center gap-3 px-4 py-3 bg-green-50 text-ordo-darkGreen font-medium border-l-4 border-ordo-green">
+                <a href="#" className="flex items-center gap-3 px-4 py-3 min-h-[44px] bg-green-50 text-ordo-darkGreen font-medium border-l-4 border-ordo-green">
                     <User className="w-4 h-4" />
                     Профиль
                 </a>
-                <a href="#" className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+                <a href="#" className="flex items-center gap-3 px-4 py-3 min-h-[44px] text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
                     <Bell className="w-4 h-4" />
                     Уведомления
                 </a>
-                <a href="#" className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+                <a href="#" className="flex items-center gap-3 px-4 py-3 min-h-[44px] text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
                     <CreditCard className="w-4 h-4" />
                     Оплата и тарифы
                 </a>
-                <a href="#" className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+                <a href="#" className="flex items-center gap-3 px-4 py-3 min-h-[44px] text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
                     <Shield className="w-4 h-4" />
                     Безопасность
                 </a>
@@ -59,7 +59,7 @@ const Settings: React.FC<SettingsProps> = ({ onLogout }) => {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Имя</label>
                             <input 

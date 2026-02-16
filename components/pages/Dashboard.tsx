@@ -376,24 +376,24 @@ const tableData: TableRowData[] = [
 
 const Dashboard: React.FC = () => {
   return (
-    <div className="p-6 lg:p-8">
+    <div className="p-4 md:p-6 lg:p-8">
       <Header />
       {/* Top Widgets Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
         {/* Funnel - Takes up 7 cols */}
         <div className="lg:col-span-7">
           <FunnelChart data={funnelData} />
         </div>
 
         {/* Right Column Widgets - Takes up 5 cols */}
-        <div className="lg:col-span-5 flex flex-col gap-6 h-full">
-          <div className="grid grid-cols-5 gap-6 h-[140px]">
+        <div className="lg:col-span-5 flex flex-col gap-4 md:gap-6 h-full">
+          <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 md:gap-6 sm:h-[140px]">
               {/* Income/Expense - 3 cols */}
-              <div className="col-span-3">
+              <div className="sm:col-span-3">
                   <IncomeExpenseWidget income={21557.49} expense={6629.09} />
               </div>
               {/* ROMI - 2 cols */}
-              <div className="col-span-2">
+              <div className="sm:col-span-2">
                   <RomiGauge value={225.2} />
               </div>
           </div>

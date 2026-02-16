@@ -29,7 +29,7 @@ const RomiGauge: React.FC<RomiGaugeProps> = ({ value }) => {
   const ny = cy + needleLength * Math.sin(needleRad);
 
   return (
-    <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm h-full flex flex-col items-center relative">
+    <div className="bg-white p-4 md:p-6 rounded-xl border border-gray-100 shadow-sm h-full flex flex-col items-center relative">
        <div className="w-full flex justify-between items-start absolute top-4 px-4">
         <h3 className="text-gray-500 font-medium text-sm flex items-center gap-1">
           ROMI <span className="text-gray-300 cursor-help text-xs">ⓘ</span>
@@ -37,7 +37,7 @@ const RomiGauge: React.FC<RomiGaugeProps> = ({ value }) => {
       </div>
 
       <div className="mt-8 relative w-full flex justify-center">
-        <svg width="200" height="110" viewBox="0 0 200 110">
+        <svg width="100%" height="110" viewBox="0 0 200 110" preserveAspectRatio="xMidYMid meet" className="max-w-[200px] mx-auto">
           <defs>
             <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#EF4444" /> {/* Red */}
@@ -77,7 +77,7 @@ const RomiGauge: React.FC<RomiGaugeProps> = ({ value }) => {
 
         {/* Value Text */}
         <div className="absolute bottom-0 left-0 w-full text-center">
-             <span className="text-2xl font-bold text-gray-900">
+             <span className="text-xl md:text-2xl font-bold text-gray-900">
                {value}%
              </span>
         </div>

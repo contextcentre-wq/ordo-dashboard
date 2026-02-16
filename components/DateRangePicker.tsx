@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 export interface DateRange {
   start: Date;
@@ -39,6 +40,7 @@ const getFirstDayOfWeek = (year: number, month: number) => {
 };
 
 const DateRangePicker: React.FC<DateRangePickerProps> = ({ value, onChange }) => {
+  const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);
   const [leftMonth, setLeftMonth] = useState(value.start.getMonth());
   const [leftYear, setLeftYear] = useState(value.start.getFullYear());
@@ -51,8 +53,9 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ value, onChange }) =>
   const rightMonth = leftMonth === 11 ? 0 : leftMonth + 1;
   const rightYear = leftMonth === 11 ? leftYear + 1 : leftYear;
 
-  // Close on outside click
+  // Close on outside click (desktop only)
   useEffect(() => {
+    if (isMobile) return;
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) {
         setIsOpen(false);
@@ -62,7 +65,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ value, onChange }) =>
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, []);
+  }, [isMobile]);
 
   const goLeft = () => {
     if (leftMonth === 0) {
@@ -84,11 +87,9 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ value, onChange }) =>
 
   const handleDayClick = useCallback((date: Date) => {
     if (selecting === 'done' || !tempStart) {
-      // First click — set start
       setTempStart(date);
       setSelecting('start');
     } else {
-      // Second click — set end
       const start = date < tempStart ? date : tempStart;
       const end = date < tempStart ? tempStart : date;
       onChange({ start, end });
@@ -122,8 +123,10 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ value, onChange }) =>
     const lastWeek = weeks[weeks.length - 1];
     while (lastWeek.length < 7) lastWeek.push(null);
 
+    const cellHeight = isMobile ? 'h-11' : 'h-8';
+
     return (
-      <div className="w-[280px]">
+      <div className={isMobile ? 'w-full' : 'w-[280px]'}>
         <div className="text-center text-sm font-semibold text-gray-800 mb-3">
           {MONTHS_RU[month]} {year}
         </div>
@@ -134,7 +137,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ value, onChange }) =>
           {weeks.map((week, wi) =>
             week.map((day, di) => {
               if (!day) {
-                return <div key={`${wi}-${di}`} className="h-8" />;
+                return <div key={`${wi}-${di}`} className={cellHeight} />;
               }
               const date = new Date(year, month, day);
               const isStart = isSameDay(date, rangeStart);
@@ -142,7 +145,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ value, onChange }) =>
               const inRange = isInRange(date, rangeStart, rangeEnd);
               const isToday = isSameDay(date, new Date());
 
-              let cellClass = 'h-8 w-full flex items-center justify-center text-xs cursor-pointer transition-colors ';
+              let cellClass = `${cellHeight} w-full flex items-center justify-center text-xs cursor-pointer transition-colors `;
 
               if (isStart || isEnd) {
                 cellClass += 'bg-ordo-darkGreen text-white font-bold ';
@@ -201,6 +204,113 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ value, onChange }) =>
     setIsOpen(false);
   };
 
+  const presets = [
+    { label: 'Сегодня', fn: () => setPreset(1) },
+    { label: 'Последние 7 дней', fn: () => setPreset(7) },
+    { label: 'Последние 14 дней', fn: () => setPreset(14) },
+    { label: 'Последние 30 дней', fn: () => setPreset(30) },
+    { label: 'Последние 90 дней', fn: () => setPreset(90) },
+    { label: 'Этот месяц', fn: () => setThisMonth() },
+    { label: 'Прошлый месяц', fn: () => setLastMonth() },
+  ];
+
+  // Mobile full-screen overlay
+  const renderMobileOverlay = () => {
+    if (!isOpen) return null;
+
+    return (
+      <div className="fixed inset-0 bg-white z-[60] flex flex-col overflow-y-auto"
+        style={{ paddingBottom: 'calc(var(--bottom-nav-height) + var(--safe-area-bottom) + 16px)' }}
+      >
+        {/* Sticky header */}
+        <div className="sticky top-0 bg-white z-10 flex items-center justify-between px-4 py-3 border-b border-gray-100">
+          <h3 className="text-base font-semibold text-gray-900">Выберите период</h3>
+          <button
+            onClick={() => { setIsOpen(false); setSelecting('done'); setTempStart(null); }}
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center"
+          >
+            <X className="w-5 h-5 text-gray-500" />
+          </button>
+        </div>
+
+        {/* Preset chips */}
+        <div className="px-4 py-3 flex flex-wrap gap-2">
+          {presets.map(p => (
+            <button
+              key={p.label}
+              onClick={p.fn}
+              className="px-3 min-h-[44px] bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700 hover:bg-green-50 hover:text-ordo-darkGreen hover:border-green-200 transition-colors"
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Navigation */}
+        <div className="flex items-center justify-between px-4 mb-2">
+          <button onClick={goLeft} className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded hover:bg-gray-100">
+            <ChevronLeft className="w-5 h-5 text-gray-500" />
+          </button>
+          <button onClick={goRight} className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded hover:bg-gray-100">
+            <ChevronRight className="w-5 h-5 text-gray-500" />
+          </button>
+        </div>
+
+        {/* Calendars stacked */}
+        <div className="px-4 space-y-6">
+          {renderMonth(leftYear, leftMonth)}
+          {renderMonth(rightYear, rightMonth)}
+        </div>
+
+        {selecting === 'start' && (
+          <div className="mt-3 text-xs text-gray-400 text-center">Выберите конечную дату</div>
+        )}
+      </div>
+    );
+  };
+
+  // Desktop popover
+  const renderDesktopPopover = () => {
+    if (!isOpen) return null;
+
+    return (
+      <div className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-200 p-5 z-50 flex gap-6">
+        {/* Presets */}
+        <div className="flex flex-col gap-1 border-r border-gray-100 pr-5 min-w-[140px]">
+          <span className="text-[10px] uppercase font-semibold text-gray-400 mb-2 tracking-wider">Быстрый выбор</span>
+          {presets.map(p => (
+            <button
+              key={p.label}
+              onClick={p.fn}
+              className="text-left text-sm text-gray-600 hover:text-ordo-darkGreen hover:bg-green-50 px-2 py-1.5 rounded transition-colors"
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Calendars */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <button onClick={goLeft} className="p-1 rounded hover:bg-gray-100 transition-colors">
+              <ChevronLeft className="w-4 h-4 text-gray-500" />
+            </button>
+            <button onClick={goRight} className="p-1 rounded hover:bg-gray-100 transition-colors">
+              <ChevronRight className="w-4 h-4 text-gray-500" />
+            </button>
+          </div>
+          <div className="flex gap-8">
+            {renderMonth(leftYear, leftMonth)}
+            {renderMonth(rightYear, rightMonth)}
+          </div>
+          {selecting === 'start' && (
+            <div className="mt-3 text-xs text-gray-400 text-center">Выберите конечную дату</div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="relative" ref={ref}>
       <button
@@ -213,50 +323,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ value, onChange }) =>
         <Calendar className="w-4 h-4 text-gray-400" />
       </button>
 
-      {isOpen && (
-        <div className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-200 p-5 z-50 flex gap-6">
-          {/* Presets */}
-          <div className="flex flex-col gap-1 border-r border-gray-100 pr-5 min-w-[140px]">
-            <span className="text-[10px] uppercase font-semibold text-gray-400 mb-2 tracking-wider">Быстрый выбор</span>
-            {[
-              { label: 'Сегодня', fn: () => setPreset(1) },
-              { label: 'Последние 7 дней', fn: () => setPreset(7) },
-              { label: 'Последние 14 дней', fn: () => setPreset(14) },
-              { label: 'Последние 30 дней', fn: () => setPreset(30) },
-              { label: 'Последние 90 дней', fn: () => setPreset(90) },
-              { label: 'Этот месяц', fn: () => setThisMonth() },
-              { label: 'Прошлый месяц', fn: () => setLastMonth() },
-            ].map(p => (
-              <button
-                key={p.label}
-                onClick={p.fn}
-                className="text-left text-sm text-gray-600 hover:text-ordo-darkGreen hover:bg-green-50 px-2 py-1.5 rounded transition-colors"
-              >
-                {p.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Calendars */}
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <button onClick={goLeft} className="p-1 rounded hover:bg-gray-100 transition-colors">
-                <ChevronLeft className="w-4 h-4 text-gray-500" />
-              </button>
-              <button onClick={goRight} className="p-1 rounded hover:bg-gray-100 transition-colors">
-                <ChevronRight className="w-4 h-4 text-gray-500" />
-              </button>
-            </div>
-            <div className="flex gap-8">
-              {renderMonth(leftYear, leftMonth)}
-              {renderMonth(rightYear, rightMonth)}
-            </div>
-            {selecting === 'start' && (
-              <div className="mt-3 text-xs text-gray-400 text-center">Выберите конечную дату</div>
-            )}
-          </div>
-        </div>
-      )}
+      {isMobile ? renderMobileOverlay() : renderDesktopPopover()}
     </div>
   );
 };

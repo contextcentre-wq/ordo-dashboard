@@ -53,7 +53,7 @@ const App: React.FC = () => {
       <Sidebar activePage={activePage} onNavigate={setActivePage} />
       
       {/* Main Content Area */}
-      <main className="ml-[70px]">
+      <main className="md:ml-[70px]">
         {renderPage()}
       </main>
     </div>
