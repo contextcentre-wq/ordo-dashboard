@@ -1,0 +1,60 @@
+-- Запрос для выгрузки продаж с ссылками на сделки в CRM (БЕЗ ДУБЛЕЙ)
+WITH ad_info AS (
+    -- Получаем информацию об объявлениях для обогащения данных о продажах
+    SELECT 
+        ad_id,
+        channel,
+        campaign_name,
+        adset_name,
+        ad_name,
+        ROW_NUMBER() OVER (
+            PARTITION BY ad_id 
+            ORDER BY date DESC  -- Берем самую свежую дату для каждого ad_id
+        ) as rn
+    FROM ad_performance
+    WHERE ad_id IS NOT NULL
+), unique_ad_info AS (
+    -- Оставляем только одну запись для каждого ad_id
+    SELECT ad_id, channel, campaign_name, adset_name, ad_name
+    FROM ad_info 
+    WHERE rn = 1
+)
+-- Финальный запрос - продажи с информацией об объявлениях и ссылками на CRM
+SELECT
+    s.id AS sale_id,
+    s.date AS sale_date,
+    s.registration AS registration_date,
+    s.deal_id,
+    s.deal_link,
+    s.amount,
+    s.client_name,
+    s.client_phone,
+    s.deal_status,
+    s.ad_id,
+    -- Добавляем явное условие для обработки случая, когда ad_id NULL
+    CASE
+        WHEN s.ad_id IS NULL AND s.channel IS NOT NULL THEN s.channel
+        ELSE COALESCE(ai.channel, s.channel, 'Неизвестный канал')
+    END AS channel,
+    ai.campaign_name,
+    ai.adset_name,
+    ai.ad_name,
+    s.whatsapp_requests,
+    s.appointments_scheduled,
+    s.plans_sent,
+    CASE WHEN s.treatment_completed THEN 'Да' ELSE 'Нет' END AS treatment_completed,
+    -- Качество сопоставления с объявлением
+    CASE 
+        WHEN ai.ad_id IS NOT NULL THEN 'Точное совпадение'
+        WHEN s.channel IS NOT NULL THEN 'Канал указан напрямую'
+        ELSE 'Нет совпадения'
+    END AS match_quality,
+    -- Расчет количества дней от регистрации до продажи
+    CASE 
+        WHEN s.registration IS NOT NULL AND s.date IS NOT NULL THEN 
+            (s.date - s.registration)
+        ELSE 0 
+    END AS days_from_registration_to_sale
+FROM sales s
+LEFT JOIN unique_ad_info ai ON s.ad_id = ai.ad_id  -- Используем unique_ad_info вместо ad_info
+ORDER BY s.date DESC, s.amount DESC;

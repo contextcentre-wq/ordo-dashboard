@@ -1,0 +1,5 @@
+{
+  "name": "ORDO Dashboard",
+  "description": "A high-fidelity analytics dashboard replica with complex charts, nested data tables, and specific UI/UX patterns.",
+  "requestFramePermissions": []
+}
