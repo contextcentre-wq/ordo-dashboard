@@ -1,5 +1,11 @@
 export type Page = 'dashboard' | 'analytics' | 'members' | 'settings';
 
+export interface Project {
+  id: string;
+  name: string;
+  createdAt: string;
+}
+
 export interface FunnelStage {
   label: string;
   value: number;

@@ -4,7 +4,7 @@ import FunnelChart from '../widgets/FunnelChart';
 import IncomeExpenseWidget from '../widgets/IncomeExpenseWidget';
 import RoasGauge from '../widgets/RomiGauge';
 import KpiGrid from '../KpiGrid';
-import { FunnelStage, Metric } from '../../types';
+import { FunnelStage, Metric, Project } from '../../types';
 import { Users, ShoppingCart, Megaphone, TrendingUp, ArrowUpRight } from 'lucide-react';
 
 // MOCK DATA
@@ -54,10 +54,10 @@ const statCards = [
   { label: 'Конверсия', value: '4.7%', icon: TrendingUp, trend: null },
 ];
 
-const Dashboard: React.FC = () => {
+const Dashboard: React.FC<{ project: Project }> = ({ project }) => {
   return (
     <div>
-      <Header />
+      <Header projectName={project.name} />
       {/* Top Section: Left metrics | Right funnel */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
         {/* Left: stacked metric cards */}

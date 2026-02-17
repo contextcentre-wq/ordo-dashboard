@@ -1,7 +1,7 @@
 import React from 'react';
 import Header from '../Header';
 import DataTable from '../DataTable';
-import { TableRowData, LeadRecord, SaleRecord } from '../../types';
+import { TableRowData, LeadRecord, SaleRecord, Project } from '../../types';
 
 const tableData: TableRowData[] = [
   {
@@ -441,10 +441,10 @@ const mockSaleRecords: SaleRecord[] = [
   },
 ];
 
-const Analytics: React.FC = () => {
+const Analytics: React.FC<{ project: Project }> = ({ project }) => {
   return (
     <div>
-      <Header />
+      <Header projectName={project.name} />
       <DataTable data={tableData} leadRecords={mockLeadRecords} saleRecords={mockSaleRecords} />
     </div>
   );

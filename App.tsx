@@ -6,7 +6,14 @@ import Members from './components/pages/Members';
 import Settings from './components/pages/Settings';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
-import { Page } from './types';
+import ProjectSelect from './components/ProjectSelect';
+import { Page, Project } from './types';
+
+const INITIAL_PROJECTS: Project[] = [
+  { id: 'p1', name: 'CL128', createdAt: '12 января 2025' },
+  { id: 'p2', name: 'Marketing Pro', createdAt: '3 февраля 2025' },
+  { id: 'p3', name: 'Innovo Dent', createdAt: '18 февраля 2025' },
+];
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -14,12 +21,37 @@ const App: React.FC = () => {
   const [activePage, setActivePage] = useState<Page>('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
+  const [projects, setProjects] = useState<Project[]>(INITIAL_PROJECTS);
+  const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
+
+  const activeProject = projects.find(p => p.id === activeProjectId);
+
   const handleLogin = () => {
     setIsAuthenticated(true);
     setActivePage('dashboard');
   };
 
-  // Auth Flow
+  const handleSelectProject = (id: string) => {
+    setActiveProjectId(id);
+    setActivePage('dashboard');
+  };
+
+  const handleCreateProject = (name: string) => {
+    const newProject: Project = {
+      id: `p${Date.now()}`,
+      name,
+      createdAt: new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }),
+    };
+    setProjects(prev => [...prev, newProject]);
+    setActiveProjectId(newProject.id);
+    setActivePage('dashboard');
+  };
+
+  const handleBackToProjects = () => {
+    setActiveProjectId(null);
+  };
+
+  // Phase 1: Auth
   if (!isAuthenticated) {
     if (authView === 'login') {
       return <Login onLogin={handleLogin} onSwitchToRegister={() => setAuthView('register')} />;
@@ -28,19 +60,30 @@ const App: React.FC = () => {
     }
   }
 
-  // Protected App Flow
+  // Phase 2: Project selection
+  if (!activeProject) {
+    return (
+      <ProjectSelect
+        projects={projects}
+        onSelectProject={handleSelectProject}
+        onCreateProject={handleCreateProject}
+      />
+    );
+  }
+
+  // Phase 3: Protected App
   const renderPage = () => {
     switch (activePage) {
       case 'dashboard':
-        return <Dashboard />;
+        return <Dashboard project={activeProject} />;
       case 'analytics':
-        return <Analytics />;
+        return <Analytics project={activeProject} />;
       case 'members':
-        return <Members />;
+        return <Members project={activeProject} />;
       case 'settings':
-        return <Settings />;
+        return <Settings project={activeProject} />;
       default:
-        return <Dashboard />;
+        return <Dashboard project={activeProject} />;
     }
   };
 
@@ -51,6 +94,10 @@ const App: React.FC = () => {
         onNavigate={setActivePage}
         collapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed(prev => !prev)}
+        activeProject={activeProject}
+        projects={projects}
+        onSwitchProject={handleSelectProject}
+        onBackToProjects={handleBackToProjects}
       />
 
       <main

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Header from '../Header';
 import { Search, X, ChevronDown, MoreHorizontal, Plus } from 'lucide-react';
-import { Member } from '../../types';
+import { Member, Project } from '../../types';
 
 const MONTHS_RU = [
   'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
@@ -33,7 +33,7 @@ const STATUS_LABELS: Record<Member['status'], string> = {
 
 const CURRENT_USER_ID = 'm1';
 
-const Members: React.FC = () => {
+const Members: React.FC<{ project: Project }> = ({ project }) => {
   const [members, setMembers] = useState<Member[]>(mockMembers);
   const [searchQuery, setSearchQuery] = useState('');
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -65,7 +65,7 @@ const Members: React.FC = () => {
 
   return (
     <div>
-      <Header />
+      <Header projectName={project.name} />
 
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Участники</h1>

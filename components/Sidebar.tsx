@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { LayoutDashboard, Table2, Users, Settings, PanelLeftClose, PanelLeft } from 'lucide-react';
-import { Page } from '../types';
+import React, { useState, useRef, useEffect } from 'react';
+import { LayoutDashboard, Table2, Users, Settings, PanelLeftClose, PanelLeft, ChevronsUpDown, Check, ArrowLeft } from 'lucide-react';
+import { Page, Project } from '../types';
 import { useIsMobile } from '../hooks/useIsMobile';
 
 interface SidebarProps {
@@ -8,6 +8,10 @@ interface SidebarProps {
   onNavigate: (page: Page) => void;
   collapsed: boolean;
   onToggleCollapse: () => void;
+  activeProject: Project;
+  projects: Project[];
+  onSwitchProject: (id: string) => void;
+  onBackToProjects: () => void;
 }
 
 const NAV_ITEMS: { page: Page; icon: typeof LayoutDashboard; label: string }[] = [
@@ -17,8 +21,22 @@ const NAV_ITEMS: { page: Page; icon: typeof LayoutDashboard; label: string }[] =
   { page: 'settings', icon: Settings, label: 'Настройки' },
 ];
 
-const Sidebar: React.FC<SidebarProps> = ({ activePage, onNavigate, collapsed, onToggleCollapse }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activePage, onNavigate, collapsed, onToggleCollapse, activeProject, projects, onSwitchProject, onBackToProjects }) => {
   const isMobile = useIsMobile();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    if (dropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [dropdownOpen]);
 
   // Mobile: bottom nav (unchanged)
   if (isMobile) {
@@ -55,13 +73,52 @@ const Sidebar: React.FC<SidebarProps> = ({ activePage, onNavigate, collapsed, on
         collapsed ? 'w-[60px]' : 'w-[220px]'
       }`}
     >
-      {/* Title area */}
-      <div className={`h-14 flex items-center border-b border-gray-100 shrink-0 ${collapsed ? 'justify-center px-2' : 'px-5'}`}>
-        {!collapsed && (
-          <span className="text-gray-900 font-semibold text-lg tracking-tight">CL128</span>
-        )}
-        {collapsed && (
-          <span className="text-gray-900 font-semibold text-lg">C</span>
+      {/* Project switcher area */}
+      <div className={`h-14 flex items-center border-b border-gray-100 shrink-0 ${collapsed ? 'justify-center px-2' : 'px-3'}`} ref={dropdownRef}>
+        {collapsed ? (
+          <button
+            onClick={onBackToProjects}
+            className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
+            title={activeProject.name}
+          >
+            <span className="text-gray-900 font-semibold text-lg">{activeProject.name[0]}</span>
+          </button>
+        ) : (
+          <div className="relative w-full">
+            <button
+              onClick={() => setDropdownOpen(prev => !prev)}
+              className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <span className="text-gray-900 font-semibold text-sm truncate flex-1 text-left">{activeProject.name}</span>
+              <ChevronsUpDown className="w-4 h-4 text-gray-400 shrink-0" />
+            </button>
+
+            {dropdownOpen && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg py-1 z-50">
+                {projects.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => { onSwitchProject(p.id); setDropdownOpen(false); }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-gray-50 transition-colors"
+                  >
+                    <span className="flex-1 truncate text-gray-700">{p.name}</span>
+                    {p.id === activeProject.id && (
+                      <Check className="w-4 h-4 text-ordo-green shrink-0" />
+                    )}
+                  </button>
+                ))}
+                <div className="border-t border-gray-100 mt-1 pt-1">
+                  <button
+                    onClick={() => { onBackToProjects(); setDropdownOpen(false); }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    <span>Все проекты</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         )}
       </div>
 

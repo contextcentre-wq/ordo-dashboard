@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import Header from '../Header';
+import { Project } from '../../types';
 
-const Settings: React.FC = () => {
-  const [dashboardName, setDashboardName] = useState('CL128');
+const Settings: React.FC<{ project: Project }> = ({ project }) => {
+  const [dashboardName, setDashboardName] = useState(project.name);
   const [isActive, setIsActive] = useState(true);
 
   return (
     <div>
-      <Header />
+      <Header projectName={project.name} />
 
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Настройки</h1>
