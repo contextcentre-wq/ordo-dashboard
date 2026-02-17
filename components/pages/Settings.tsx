@@ -20,7 +20,7 @@ const Settings: React.FC<{ project: Project }> = ({ project }) => {
 
         <div className="space-y-6">
           {/* Dashboard name */}
-          <div className="grid grid-cols-2 gap-4 items-center">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4 items-center">
             <label className="text-sm font-medium text-gray-700">Название дашборда</label>
             <input
               type="text"
@@ -31,12 +31,12 @@ const Settings: React.FC<{ project: Project }> = ({ project }) => {
           </div>
 
           {/* Status toggle */}
-          <div className="grid grid-cols-2 gap-4 items-center">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4 items-center">
             <div>
               <label className="text-sm font-medium text-gray-700">Статус</label>
               <p className="text-xs text-gray-400 mt-0.5">{isActive ? 'Дашборд активен' : 'Дашборд неактивен'}</p>
             </div>
-            <div className="flex justify-end">
+            <div className="flex md:justify-end">
               <button
                 onClick={() => setIsActive(!isActive)}
                 className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${

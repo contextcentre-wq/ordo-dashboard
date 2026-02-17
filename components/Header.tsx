@@ -7,7 +7,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ projectName }) => {
   return (
     <header className="flex items-center h-10 mb-6">
-      <h1 className="text-gray-900 text-xl font-semibold">{projectName}</h1>
+      <h1 className="text-gray-900 text-lg md:text-xl font-semibold truncate">{projectName}</h1>
     </header>
   );
 };

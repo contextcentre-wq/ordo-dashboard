@@ -1,10 +1,12 @@
 import React from 'react';
+import { useIsMobile } from '../../hooks/useIsMobile';
 
 interface RoasGaugeProps {
   value: number;
 }
 
 const RoasGauge: React.FC<RoasGaugeProps> = ({ value }) => {
+  const isMobile = useIsMobile();
   const minVal = -100;
   const maxVal = 300;
   const normalized = Math.max(minVal, Math.min(value, maxVal));
@@ -33,13 +35,13 @@ const RoasGauge: React.FC<RoasGaugeProps> = ({ value }) => {
         {/* Scale labels — above bar */}
         <div className="flex justify-between mb-1">
           {segments.map((seg, i) => (
-            <span key={i} className="text-[8px] text-gray-400 font-mono">{seg.label}</span>
+            <span key={i} className={`${isMobile ? 'text-[10px]' : 'text-[8px]'} text-gray-400 font-mono`}>{seg.label}</span>
           ))}
         </div>
 
         <div className="relative">
           {/* Segmented bar */}
-          <div className="flex h-2.5 rounded-full overflow-hidden">
+          <div className={`flex ${isMobile ? 'h-3.5' : 'h-2.5'} rounded-full overflow-hidden`}>
             {segments.map((seg, i) => (
               <div
                 key={i}

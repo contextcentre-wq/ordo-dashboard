@@ -752,7 +752,7 @@ const DataTable: React.FC<DataTableProps> = ({ data, leadRecords = [], saleRecor
                   value={crmSearchQuery}
                   onChange={(e) => setCrmSearchQuery(e.target.value)}
                   placeholder="Введите номер телефона...."
-                  className="pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-ordo-green/20 focus:border-ordo-green transition-all w-64"
+                  className="pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-ordo-green/20 focus:border-ordo-green transition-all w-full md:w-64"
                 />
               </div>
               <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-ordo-lightGreen text-ordo-green text-sm font-medium hover:bg-ordo-green/20 transition-colors">

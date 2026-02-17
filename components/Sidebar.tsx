@@ -58,7 +58,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activePage, onNavigate, collapsed, on
                 <div className="absolute top-0 left-1/4 right-1/4 h-[2px] bg-ordo-green rounded-b" />
               )}
               <Icon className="w-5 h-5" />
-              <span className="text-[10px] mt-1 font-medium">{label}</span>
+              <span className="text-[11px] mt-0.5 font-medium">{label}</span>
             </button>
           );
         })}

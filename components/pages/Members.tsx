@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Header from '../Header';
 import { Search, X, ChevronDown, MoreHorizontal, Plus } from 'lucide-react';
 import { Member, Project } from '../../types';
+import { useIsMobile } from '../../hooks/useIsMobile';
 
 const MONTHS_RU = [
   'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
@@ -34,6 +35,7 @@ const STATUS_LABELS: Record<Member['status'], string> = {
 const CURRENT_USER_ID = 'm1';
 
 const Members: React.FC<{ project: Project }> = ({ project }) => {
+  const isMobile = useIsMobile();
   const [members, setMembers] = useState<Member[]>(mockMembers);
   const [searchQuery, setSearchQuery] = useState('');
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -74,7 +76,7 @@ const Members: React.FC<{ project: Project }> = ({ project }) => {
 
       {/* Toolbar */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
-        <div className="relative w-72">
+        <div className="relative w-full sm:w-72">
           <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
@@ -93,83 +95,139 @@ const Members: React.FC<{ project: Project }> = ({ project }) => {
         </button>
       </div>
 
-      {/* Members table */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full" role="grid">
-            <thead>
-              <tr className="bg-white text-left border-b border-gray-100 sticky top-0 z-20 shadow-sm">
-                <th className="px-3 py-2 text-xs font-medium text-gray-400 uppercase tracking-wider">Участник</th>
-                <th className="px-3 py-2 text-xs font-medium text-gray-400 uppercase tracking-wider">Статус</th>
-                <th className="px-3 py-2 text-xs font-medium text-gray-400 uppercase tracking-wider hidden sm:table-cell">Дата регистрации</th>
-                <th className="px-3 py-2 text-xs font-medium text-gray-400 uppercase tracking-wider"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {filteredMembers.map(member => {
-                const isCurrentUser = member.id === CURRENT_USER_ID;
-                const dateDisplay = formatMemberDate(
-                  member.registrationDate,
-                  member.id === 'm1' ? '17:57' : member.id === 'm2' ? '14:29' : member.id === 'm3' ? '14:29' : '09:15'
-                );
-
-                return (
-                  <tr key={member.id} className="hover:bg-gray-50/60 transition-colors group">
-                    <td className="px-3 py-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-gray-900">{member.phone}</span>
-                        {isCurrentUser && (
-                          <span className="inline-flex items-center px-1.5 h-6 rounded-full text-tiny font-medium bg-ordo-lightGreen text-ordo-green">
-                            вы
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-3 py-2">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        member.status === 'active'
-                          ? 'bg-ordo-lightGreen text-ordo-green'
-                          : 'bg-amber-100/50 text-amber-700'
-                      }`}>
-                        {STATUS_LABELS[member.status]}
+      {/* Members list */}
+      {isMobile ? (
+        <div className="space-y-3">
+          {filteredMembers.map(member => {
+            const isCurrentUser = member.id === CURRENT_USER_ID;
+            const dateDisplay = formatMemberDate(
+              member.registrationDate,
+              member.id === 'm1' ? '17:57' : member.id === 'm2' ? '14:29' : member.id === 'm3' ? '14:29' : '09:15'
+            );
+            return (
+              <div key={member.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-sm font-medium text-gray-900 whitespace-nowrap">{member.phone}</span>
+                    {isCurrentUser && (
+                      <span className="inline-flex items-center px-1.5 h-5 rounded-full text-[10px] font-medium bg-ordo-lightGreen text-ordo-green shrink-0">
+                        вы
                       </span>
-                    </td>
-                    <td className="px-3 py-2 text-sm text-gray-500 hidden sm:table-cell">
-                      {dateDisplay}
-                    </td>
-                    <td className="px-3 py-2">
-                      <div className="flex items-center justify-end gap-2">
-                        <div className="relative inline-block">
-                          <select
-                            value={member.role}
-                            onChange={(e) => handleRoleChange(member.id, e.target.value as Member['role'])}
-                            className="appearance-none bg-transparent border border-gray-200 rounded-lg px-3 py-1.5 pr-8 text-sm text-gray-500 cursor-pointer focus:outline-none focus:ring-2 focus:ring-ordo-green/20 focus:border-ordo-green"
-                          >
-                            <option value="owner">Владелец</option>
-                            <option value="admin">Админ</option>
-                            <option value="user">Пользователь</option>
-                          </select>
-                          <ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    )}
+                  </div>
+                  <button className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 shrink-0 -mr-2">
+                    <MoreHorizontal className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      member.status === 'active'
+                        ? 'bg-ordo-lightGreen text-ordo-green'
+                        : 'bg-amber-100/50 text-amber-700'
+                    }`}>
+                      {STATUS_LABELS[member.status]}
+                    </span>
+                    <span className="text-xs text-gray-400">{dateDisplay}</span>
+                  </div>
+                  <div className="relative inline-block">
+                    <select
+                      value={member.role}
+                      onChange={(e) => handleRoleChange(member.id, e.target.value as Member['role'])}
+                      className="appearance-none bg-transparent border border-gray-200 rounded-lg px-3 py-1.5 pr-8 text-sm text-gray-500 cursor-pointer focus:outline-none focus:ring-2 focus:ring-ordo-green/20 focus:border-ordo-green"
+                    >
+                      <option value="owner">Владелец</option>
+                      <option value="admin">Админ</option>
+                      <option value="user">Пользователь</option>
+                    </select>
+                    <ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          {filteredMembers.length === 0 && (
+            <div className="text-center text-gray-400 py-8 text-sm">Участники не найдены</div>
+          )}
+        </div>
+      ) : (
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full" role="grid">
+              <thead>
+                <tr className="bg-white text-left border-b border-gray-100 sticky top-0 z-20 shadow-sm">
+                  <th className="px-3 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Участник</th>
+                  <th className="px-3 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Статус</th>
+                  <th className="px-3 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Дата регистрации</th>
+                  <th className="px-3 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {filteredMembers.map(member => {
+                  const isCurrentUser = member.id === CURRENT_USER_ID;
+                  const dateDisplay = formatMemberDate(
+                    member.registrationDate,
+                    member.id === 'm1' ? '17:57' : member.id === 'm2' ? '14:29' : member.id === 'm3' ? '14:29' : '09:15'
+                  );
+
+                  return (
+                    <tr key={member.id} className="hover:bg-gray-50/60 transition-colors group">
+                      <td className="px-3 py-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-gray-900">{member.phone}</span>
+                          {isCurrentUser && (
+                            <span className="inline-flex items-center px-1.5 h-6 rounded-full text-tiny font-medium bg-ordo-lightGreen text-ordo-green">
+                              вы
+                            </span>
+                          )}
                         </div>
-                        <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
-                          <MoreHorizontal className="w-4 h-4" />
-                        </button>
-                      </div>
+                      </td>
+                      <td className="px-3 py-3">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          member.status === 'active'
+                            ? 'bg-ordo-lightGreen text-ordo-green'
+                            : 'bg-amber-100/50 text-amber-700'
+                        }`}>
+                          {STATUS_LABELS[member.status]}
+                        </span>
+                      </td>
+                      <td className="px-3 py-3 text-sm text-gray-500">
+                        {dateDisplay}
+                      </td>
+                      <td className="px-3 py-3">
+                        <div className="flex items-center justify-end gap-2">
+                          <div className="relative inline-block">
+                            <select
+                              value={member.role}
+                              onChange={(e) => handleRoleChange(member.id, e.target.value as Member['role'])}
+                              className="appearance-none bg-transparent border border-gray-200 rounded-lg px-3 py-1.5 pr-8 text-sm text-gray-500 cursor-pointer focus:outline-none focus:ring-2 focus:ring-ordo-green/20 focus:border-ordo-green"
+                            >
+                              <option value="owner">Владелец</option>
+                              <option value="admin">Админ</option>
+                              <option value="user">Пользователь</option>
+                            </select>
+                            <ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                          </div>
+                          <button className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
+                            <MoreHorizontal className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {filteredMembers.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="text-center text-gray-400 py-8 text-sm">
+                      Участники не найдены
                     </td>
                   </tr>
-                );
-              })}
-              {filteredMembers.length === 0 && (
-                <tr>
-                  <td colSpan={4} className="text-center text-gray-400 py-8 text-sm">
-                    Участники не найдены
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Invite Modal */}
       {showInviteModal && (

@@ -116,7 +116,7 @@ const Dashboard: React.FC<{ project: Project }> = ({ project }) => {
             <tbody>
               {topCampaigns.map((c, i) => (
                 <tr key={i} className="border-b border-gray-50 last:border-0">
-                  <td className="py-2.5 text-gray-700 truncate max-w-[200px]">{c.name}</td>
+                  <td className="py-2.5 text-gray-700 truncate max-w-[120px] sm:max-w-[200px]">{c.name}</td>
                   <td className="py-2.5 text-right text-gray-900 font-medium">{c.results.toLocaleString()}</td>
                   <td className="py-2.5 text-right">
                     <span className={`font-medium ${c.roas >= 200 ? 'text-emerald-600' : 'text-amber-600'}`}>

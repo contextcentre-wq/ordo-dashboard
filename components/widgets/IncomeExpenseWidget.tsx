@@ -1,4 +1,5 @@
 import React from 'react';
+import { useIsMobile } from '../../hooks/useIsMobile';
 
 interface IncomeExpenseProps {
   income: number;
@@ -6,6 +7,7 @@ interface IncomeExpenseProps {
 }
 
 const IncomeExpenseWidget: React.FC<IncomeExpenseProps> = ({ income, expense }) => {
+  const isMobile = useIsMobile();
   const total = Math.max(income, expense) * 1.2; // Add some buffer
   const incomePercent = Math.min((income / total) * 100, 100);
   const expensePercent = Math.min((expense / total) * 100, 100);
@@ -32,7 +34,7 @@ const IncomeExpenseWidget: React.FC<IncomeExpenseProps> = ({ income, expense }) 
       </div>
 
       {/* Stacked/Overlaid Progress Bar */}
-      <div className="relative h-3 w-full bg-gray-100 rounded-full overflow-hidden">
+      <div className={`relative ${isMobile ? 'h-4' : 'h-3'} w-full bg-gray-100 rounded-full overflow-hidden`}>
         {/* Income Bar (Green) */}
         <div 
           className="absolute top-0 left-0 h-full bg-ordo-green rounded-full z-10" 
