@@ -20,17 +20,15 @@ const IncomeExpenseWidget: React.FC<IncomeExpenseProps> = ({ income, expense }) 
   };
 
   return (
-    <div className="bg-white p-4 md:p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between h-full">
-      <div className="flex justify-between items-center mb-2">
-        <h3 className="text-gray-500 font-medium text-sm flex items-center gap-1">
-          Доход/Расходы 
-          <span className="text-gray-300 cursor-help text-xs">ⓘ</span>
-        </h3>
-      </div>
+    <div className="bg-white px-4 py-3 md:px-5 md:py-4 rounded-2xl border border-gray-100/80 shadow-md shadow-sky-100/20 flex flex-col justify-between h-full">
+      <h3 className="text-gray-500 font-medium text-xs flex items-center gap-1 mb-1">
+        Доход/Расходы
+        <span className="text-gray-300 cursor-help text-[10px]">ⓘ</span>
+      </h3>
 
-      <div className="flex justify-between items-end mb-2">
-        <span className="text-base md:text-xl font-bold text-gray-900">{formatCurrency(income)}</span>
-        <span className="text-sm md:text-lg font-bold text-gray-900">{formatCurrency(expense)}</span>
+      <div className="flex justify-between items-end mb-1.5">
+        <span className="text-sm md:text-base font-bold text-gray-900">{formatCurrency(income)}</span>
+        <span className="text-xs md:text-sm font-bold text-gray-900">{formatCurrency(expense)}</span>
       </div>
 
       {/* Stacked/Overlaid Progress Bar */}

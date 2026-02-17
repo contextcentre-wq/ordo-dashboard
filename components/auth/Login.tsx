@@ -7,7 +7,7 @@ interface LoginProps {
 
 const Login: React.FC<LoginProps> = ({ onLogin, onSwitchToRegister }) => {
   return (
-    <div className="min-h-screen bg-[#F5F6F7] flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-[#F0F4F8] flex flex-col items-center justify-center p-4">
         <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
             <div className="text-center mb-8">
                 <p className="text-gray-500">Войдите, чтобы продолжить работу</p>
@@ -19,7 +19,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, onSwitchToRegister }) => {
                     <input 
                         type="email" 
                         placeholder="name@company.com"
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none transition-all bg-gray-50 focus:bg-white text-gray-900 placeholder-gray-400"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all bg-gray-50 focus:bg-white text-gray-900 placeholder-gray-400"
                         required 
                     />
                 </div>
@@ -32,14 +32,14 @@ const Login: React.FC<LoginProps> = ({ onLogin, onSwitchToRegister }) => {
                     <input 
                         type="password" 
                         placeholder="••••••••"
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none transition-all bg-gray-50 focus:bg-white text-gray-900 placeholder-gray-400"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all bg-gray-50 focus:bg-white text-gray-900 placeholder-gray-400"
                         required 
                     />
                 </div>
 
                 <button 
                     type="submit" 
-                    className="w-full py-3.5 bg-ordo-green text-white rounded-xl font-bold text-lg hover:bg-ordo-darkGreen transition-all transform hover:scale-[1.02] shadow-lg shadow-green-200"
+                    className="w-full py-3.5 bg-ordo-green text-white rounded-xl font-bold text-lg hover:bg-ordo-darkGreen transition-all transform hover:scale-[1.02] shadow-lg shadow-sky-200"
                 >
                     Войти
                 </button>

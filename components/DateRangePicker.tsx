@@ -153,7 +153,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ value, onChange }) =>
                 if (isEnd && !isStart) cellClass += 'rounded-r-full ';
                 if (isStart && isEnd) cellClass += 'rounded-full ';
               } else if (inRange) {
-                cellClass += 'bg-green-50 text-ordo-darkGreen ';
+                cellClass += 'bg-sky-50 text-ordo-darkGreen ';
               } else {
                 cellClass += 'text-gray-700 hover:bg-gray-100 rounded-full ';
               }
@@ -239,7 +239,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ value, onChange }) =>
             <button
               key={p.label}
               onClick={p.fn}
-              className="px-3 min-h-[44px] bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700 hover:bg-green-50 hover:text-ordo-darkGreen hover:border-green-200 transition-colors"
+              className="px-3 min-h-[44px] bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700 hover:bg-sky-50 hover:text-ordo-darkGreen hover:border-sky-200 transition-colors"
             >
               {p.label}
             </button>
@@ -282,7 +282,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ value, onChange }) =>
             <button
               key={p.label}
               onClick={p.fn}
-              className="text-left text-sm text-gray-600 hover:text-ordo-darkGreen hover:bg-green-50 px-2 py-1.5 rounded transition-colors"
+              className="text-left text-sm text-gray-600 hover:text-ordo-darkGreen hover:bg-sky-50 px-2 py-1.5 rounded transition-colors"
             >
               {p.label}
             </button>

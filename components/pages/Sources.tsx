@@ -26,13 +26,13 @@ const Sources: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {sources.map((source, idx) => (
-          <div key={idx} className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 relative overflow-hidden group hover:border-green-200 transition-colors">
+          <div key={idx} className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 relative overflow-hidden group hover:border-sky-200 transition-colors">
             <div className="flex justify-between items-start mb-4">
               <div className={`w-12 h-12 rounded-lg ${source.color} flex items-center justify-center text-white font-bold text-xl`}>
                 {source.name.charAt(0)}
               </div>
               <div className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${
-                source.status === 'connected' ? 'bg-green-50 text-green-700' : 
+                source.status === 'connected' ? 'bg-sky-50 text-sky-700' : 
                 source.status === 'error' ? 'bg-red-50 text-red-700' : 'bg-gray-100 text-gray-500'
               }`}>
                 {source.status === 'connected' && <CheckCircle2 className="w-3 h-3" />}
@@ -57,8 +57,8 @@ const Sources: React.FC = () => {
         ))}
         
         {/* Placeholder for new integration */}
-        <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:border-ordo-green hover:bg-green-50/50 transition-all group min-h-[200px]">
-            <div className="w-12 h-12 rounded-full bg-gray-100 group-hover:bg-green-100 flex items-center justify-center mb-3 transition-colors">
+        <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:border-ordo-green hover:bg-sky-50/50 transition-all group min-h-[200px]">
+            <div className="w-12 h-12 rounded-full bg-gray-100 group-hover:bg-sky-100 flex items-center justify-center mb-3 transition-colors">
                 <Plus className="w-6 h-6 text-gray-400 group-hover:text-ordo-green" />
             </div>
             <h3 className="font-semibold text-gray-900">Подключить новый</h3>

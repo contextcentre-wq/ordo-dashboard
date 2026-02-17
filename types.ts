@@ -1,4 +1,4 @@
-export type Page = 'dashboard' | 'members' | 'settings';
+export type Page = 'dashboard' | 'analytics' | 'members' | 'settings';
 
 export interface FunnelStage {
   label: string;
@@ -18,6 +18,7 @@ export interface TableRowData {
   name: string;
   type: 'project' | 'campaign' | 'group' | 'ad';
   isActive: boolean;
+  account: string;
   expenses: number;
   income: number;
   roas: number;

@@ -12,6 +12,7 @@ ORDO Dashboard is a React SPA for marketing analytics — a Russian-language das
 npm run dev      # Start dev server on http://localhost:3000
 npm run build    # Production build via Vite
 npm run preview  # Preview production build
+npx netlify-cli deploy --prod --dir=dist  # Deploy to https://ordo-dashboard.netlify.app
 ```
 
 No test runner, linter, or formatter is configured.

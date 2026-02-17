@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/pages/Dashboard';
+import Analytics from './components/pages/Analytics';
 import Members from './components/pages/Members';
 import Settings from './components/pages/Settings';
 import Login from './components/auth/Login';
@@ -11,15 +12,11 @@ const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authView, setAuthView] = useState<'login' | 'register'>('login');
   const [activePage, setActivePage] = useState<Page>('dashboard');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const handleLogin = () => {
     setIsAuthenticated(true);
     setActivePage('dashboard');
-  };
-
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    setAuthView('login');
   };
 
   // Auth Flow
@@ -36,21 +33,30 @@ const App: React.FC = () => {
     switch (activePage) {
       case 'dashboard':
         return <Dashboard />;
+      case 'analytics':
+        return <Analytics />;
       case 'members':
         return <Members />;
       case 'settings':
-        return <Settings onLogout={handleLogout} />;
+        return <Settings />;
       default:
         return <Dashboard />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-ordo-bg font-sans text-ordo-text">
-      <Sidebar activePage={activePage} onNavigate={setActivePage} />
+    <div className="bg-slate-50 font-sans text-ordo-text">
+      <Sidebar
+        activePage={activePage}
+        onNavigate={setActivePage}
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed(prev => !prev)}
+      />
 
-      {/* Main Content Area */}
-      <main className="md:ml-[70px]">
+      <main
+        className="relative px-8 md:px-12 py-6 h-screen max-h-screen mx-auto flex flex-col bg-slate-50 overflow-y-auto transition-all duration-300"
+        style={{ marginLeft: sidebarCollapsed ? 60 : 220 }}
+      >
         {renderPage()}
       </main>
     </div>
