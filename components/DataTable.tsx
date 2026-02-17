@@ -169,7 +169,6 @@ const DataTable: React.FC<DataTableProps> = ({ data, leadRecords = [], saleRecor
 
   const handleTabChange = (tab: ActiveTab) => {
     if (isHierarchyTab(tab) && tab !== activeTab) {
-      setSelectedIds(new Set());
       setExpandedRows({});
     }
     setActiveTab(tab);
@@ -475,12 +474,14 @@ const DataTable: React.FC<DataTableProps> = ({ data, leadRecords = [], saleRecor
       <div key={row.id} className={`border border-gray-100 rounded-xl p-4 ${isSelected ? 'bg-green-50/50 border-green-200' : 'bg-white'}`}>
         {/* Card header */}
         <div className="flex items-center gap-3 mb-3">
-          <input
-            type="checkbox"
-            checked={isSelected}
-            onChange={() => toggleSelect(row.id)}
-            className="rounded border-gray-300 text-ordo-green focus:ring-ordo-green bg-white accent-ordo-green shrink-0"
-          />
+          {effectiveHierarchyTab === 'projects' && (
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={() => toggleSelect(row.id)}
+              className="rounded border-gray-300 text-ordo-green focus:ring-ordo-green bg-white accent-ordo-green shrink-0"
+            />
+          )}
           <span className="text-sm font-medium text-gray-900 flex-1 min-w-0 truncate">{row.name}</span>
           <span className={`text-xs font-bold px-2 py-0.5 rounded-full shrink-0 ${roasBgColor}`}>
             {row.roas}%
@@ -590,12 +591,14 @@ const DataTable: React.FC<DataTableProps> = ({ data, leadRecords = [], saleRecor
         <tr className={`hover:bg-gray-50 group border-b border-gray-100 ${depth > 0 ? 'bg-gray-50/50' : 'bg-white'} ${isSelected ? 'bg-green-50/50' : ''}`}>
           {/* Checkbox */}
           <td className="px-4 py-2.5 whitespace-nowrap w-10">
-            <input
-              type="checkbox"
-              checked={isSelected}
-              onChange={() => toggleSelect(row.id)}
-              className="rounded border-gray-300 text-ordo-green focus:ring-ordo-green bg-white accent-ordo-green"
-            />
+            {effectiveHierarchyTab === 'projects' && (
+              <input
+                type="checkbox"
+                checked={isSelected}
+                onChange={() => toggleSelect(row.id)}
+                className="rounded border-gray-300 text-ordo-green focus:ring-ordo-green bg-white accent-ordo-green"
+              />
+            )}
           </td>
 
           {/* Name column — sticky */}
@@ -676,7 +679,7 @@ const DataTable: React.FC<DataTableProps> = ({ data, leadRecords = [], saleRecor
   const renderHierarchyTab = (tab: HierarchyTab) => {
     const isActive = activeTab === tab;
     const count = counters[tab];
-    const showBadge = count > 0;
+    const showBadge = selectedIds.size > 0 && count > 0;
 
     return (
       <button
@@ -760,9 +763,9 @@ const DataTable: React.FC<DataTableProps> = ({ data, leadRecords = [], saleRecor
                 Экспорт
               </button>
             </div>
-          ) : (
+          ) : selectedIds.size > 0 ? (
             <button onClick={clearSelection} className="text-xs text-gray-400 hover:text-gray-600 font-medium">Сбросить фильтры</button>
-          )}
+          ) : null}
         </div>
       </div>
 
@@ -780,12 +783,14 @@ const DataTable: React.FC<DataTableProps> = ({ data, leadRecords = [], saleRecor
               <thead className="sticky top-0 z-20 bg-white">
                 <tr className="border-b border-gray-200 text-left">
                   <th className={`${TH_CLS} w-10`}>
-                    <input
-                      type="checkbox"
-                      checked={allVisibleSelected}
-                      onChange={toggleSelectAll}
-                      className="rounded border-gray-300 text-ordo-green focus:ring-ordo-green bg-white accent-ordo-green"
-                    />
+                    {effectiveHierarchyTab === 'projects' && (
+                      <input
+                        type="checkbox"
+                        checked={allVisibleSelected}
+                        onChange={toggleSelectAll}
+                        className="rounded border-gray-300 text-ordo-green focus:ring-ordo-green bg-white accent-ordo-green"
+                      />
+                    )}
                   </th>
                   <th className={`${TH_CLS} sticky left-0 bg-white z-20 shadow-[inset_-1px_0_0_0_#00000021]`}>{nameColumnLabel}</th>
 
