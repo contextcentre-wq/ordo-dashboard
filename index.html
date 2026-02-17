@@ -12,8 +12,10 @@
           extend: {
             colors: {
               ordo: {
-                green: '#4CAF50',
-                darkGreen: '#2E7D32',
+                green: 'hsl(var(--ordo-primary) / <alpha-value>)',
+                darkGreen: 'hsl(var(--ordo-primary-dark) / <alpha-value>)',
+                lightGreen: 'hsl(var(--ordo-primary-light) / <alpha-value>)',
+                400: 'hsl(var(--ordo-primary-400) / <alpha-value>)',
                 bg: '#F5F6F7',
                 text: '#1F2937',
                 gray: '#9CA3AF'
@@ -38,6 +40,10 @@
       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
       :root {
         color-scheme: light;
+        --ordo-primary: 162 100% 20%;
+        --ordo-primary-dark: 162 100% 17%;
+        --ordo-primary-light: 162 26% 90%;
+        --ordo-primary-400: 163 49% 34%;
         --safe-area-top: env(safe-area-inset-top, 0px);
         --safe-area-bottom: env(safe-area-inset-bottom, 0px);
         --safe-area-left: env(safe-area-inset-left, 0px);

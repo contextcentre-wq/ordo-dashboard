@@ -1,16 +1,16 @@
-export type Page = 'dashboard' | 'sources' | 'audiences' | 'settings';
+export type Page = 'dashboard' | 'members' | 'settings';
 
 export interface FunnelStage {
   label: string;
   value: number;
-  displayValue: string; // e.g., "1.6 млн"
-  conversionRate: number; // e.g. 100 or 113.6
-  isGood?: boolean; // Determines bubble color if needed, defaulting to green based on specs
+  displayValue: string;
+  conversionRate: number;
+  isGood?: boolean;
 }
 
 export interface Metric {
   label: string;
-  value: string; // Pre-formatted string e.g. "$3.74"
+  value: string;
 }
 
 export interface TableRowData {
@@ -20,23 +20,58 @@ export interface TableRowData {
   isActive: boolean;
   expenses: number;
   income: number;
-  romi: number;
+  roas: number;
   reach: number;
   impressions: number;
   cpm: number;
   clicks: number;
   ctr: number;
   cpc: number;
-  // New fields from screenshots
   results: number;
   cpr: number;
   leads: number;
   cpl: number;
-  qLeads: number; // кЛиды
+  qLeads: number;
   cpql: number;
   sales: number;
   cps: number;
-  adId?: string; // Only for ads
+  aov: number;
+  adId?: string;
+  children?: TableRowData[];
+}
 
-  children?: TableRowData[]; // For nested rows
+export interface LeadRecord {
+  id: string;
+  creationDate: string;
+  phone: string;
+  contactType: string;
+  deal: string;
+  leadType: string;
+  budget: number;
+  status: string;
+  pipeline: string;
+  ad: string;
+  creative: string;
+  project: string;
+  campaign: string;
+  group: string;
+  responsible: string;
+  utmSource: string;
+  utmMedium: string;
+  utmCampaign: string;
+  utmContent: string;
+  utmTerm: string;
+}
+
+export interface SaleRecord extends LeadRecord {
+  saleDate: string;
+  dealCycle: string;
+}
+
+export interface Member {
+  id: string;
+  phone: string;
+  status: 'active' | 'invited';
+  registrationDate: string;
+  role: 'owner' | 'admin' | 'user';
 }

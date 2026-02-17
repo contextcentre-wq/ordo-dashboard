@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Share2, Users, Settings } from 'lucide-react';
+import { LayoutDashboard, Users, Settings } from 'lucide-react';
 import { Page } from '../types';
 import { useIsMobile } from '../hooks/useIsMobile';
 
@@ -10,8 +10,7 @@ interface SidebarProps {
 
 const NAV_ITEMS: { page: Page; icon: typeof LayoutDashboard; label: string }[] = [
   { page: 'dashboard', icon: LayoutDashboard, label: 'Дашборд' },
-  { page: 'sources', icon: Share2, label: 'Источники' },
-  { page: 'audiences', icon: Users, label: 'Аудитории' },
+  { page: 'members', icon: Users, label: 'Участники' },
   { page: 'settings', icon: Settings, label: 'Настройки' },
 ];
 
@@ -45,18 +44,18 @@ const Sidebar: React.FC<SidebarProps> = ({ activePage, onNavigate }) => {
     );
   }
 
-  // Desktop sidebar
+  // Desktop sidebar — floating pill style
   const getButtonClass = (page: Page) => {
     const isActive = activePage === page;
     if (isActive) {
       return "w-10 h-10 bg-ordo-green rounded-full flex items-center justify-center shadow-lg shadow-green-200 text-white transition-all duration-200";
     }
-    return "w-10 h-10 flex items-center justify-center hover:bg-gray-50 rounded-full transition-colors text-gray-400 hover:text-gray-600";
+    return "w-10 h-10 flex items-center justify-center hover:bg-white/50 rounded-full transition-colors text-white/70 hover:text-white";
   };
 
   return (
-    <div className="w-[70px] bg-white h-screen fixed left-0 top-0 border-r border-gray-200 hidden md:flex flex-col items-center py-6 z-50">
-      <div className="flex flex-col space-y-8">
+    <div className="fixed left-4 top-1/2 -translate-y-1/2 z-50 hidden md:block">
+      <div className="bg-ordo-green/80 backdrop-blur-md rounded-full py-4 px-3 flex flex-col items-center space-y-4 shadow-xl">
         {NAV_ITEMS.map(({ page, icon: Icon, label }) => (
           <div key={page} className="relative group cursor-pointer" onClick={() => onNavigate(page)}>
             <div className={getButtonClass(page)}>

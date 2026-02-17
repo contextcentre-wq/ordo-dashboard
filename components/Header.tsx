@@ -1,18 +1,25 @@
 import React from 'react';
+import { Globe } from 'lucide-react';
 
 const Header: React.FC = () => {
   return (
-    <header className="flex items-center justify-end mb-6">
-      <div className="hidden md:block">
-        {/* Decorative Dots Pattern */}
-        <svg width="100" height="24" viewBox="0 0 100 24" fill="none">
-          <defs>
-            <pattern id="dot-pattern" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
-              <circle cx="2" cy="2" r="1.5" className="text-gray-300" fill="currentColor" />
-            </pattern>
-          </defs>
-          <rect width="100" height="24" fill="url(#dot-pattern)" />
-        </svg>
+    <header className="flex items-center justify-between mb-6">
+      {/* Left: ORDO logo */}
+      <div className="flex items-center gap-2">
+        <span className="text-xl font-bold text-gray-900 tracking-tight">
+          <span className="text-ordo-green">&#x1F701;</span> ORDO
+        </span>
+      </div>
+
+      {/* Center: Workspace code badge */}
+      <div className="bg-ordo-lightGreen text-ordo-green text-sm font-semibold px-4 py-1.5 rounded-lg">
+        CL128
+      </div>
+
+      {/* Right: Language selector */}
+      <div className="flex items-center gap-1.5 text-gray-400 text-sm cursor-default">
+        <Globe className="w-4 h-4" />
+        <span>RU</span>
       </div>
     </header>
   );

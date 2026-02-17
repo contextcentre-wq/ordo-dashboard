@@ -2,10 +2,10 @@ import React from 'react';
 import Header from '../Header';
 import FunnelChart from '../widgets/FunnelChart';
 import IncomeExpenseWidget from '../widgets/IncomeExpenseWidget';
-import RomiGauge from '../widgets/RomiGauge';
+import RoasGauge from '../widgets/RomiGauge';
 import KpiGrid from '../KpiGrid';
 import DataTable from '../DataTable';
-import { FunnelStage, Metric, TableRowData } from '../../types';
+import { FunnelStage, Metric, TableRowData, LeadRecord, SaleRecord } from '../../types';
 
 // MOCK DATA
 const funnelData: FunnelStage[] = [
@@ -26,7 +26,8 @@ const kpiMetrics: Metric[] = [
   { label: 'CPL', value: '$5.29' },
   { label: 'CPqL', value: '$16.01' },
   { label: 'CPS', value: '$61.95' },
-  { label: 'Ср.чек', value: '$201.47' },
+  { label: 'AOV', value: '$201.47' },
+  { label: 'ROAS', value: '225.2%' },
 ];
 
 const tableData: TableRowData[] = [
@@ -37,7 +38,7 @@ const tableData: TableRowData[] = [
     isActive: true,
     expenses: 6629.09,
     income: 21557.49,
-    romi: 225.2,
+    roas: 225.2,
     reach: 1562998,
     impressions: 1774804,
     cpm: 3.74,
@@ -52,6 +53,7 @@ const tableData: TableRowData[] = [
     cpql: 16.01,
     sales: 107,
     cps: 61.95,
+    aov: 201.47,
     children: [
       {
         id: 'c1',
@@ -60,7 +62,7 @@ const tableData: TableRowData[] = [
         isActive: true,
         expenses: 1200.50,
         income: 5400.00,
-        romi: 349.8,
+        roas: 349.8,
         reach: 45000,
         impressions: 98000,
         cpm: 12.25,
@@ -75,6 +77,7 @@ const tableData: TableRowData[] = [
         cpql: 12.00,
         sales: 30,
         cps: 40.02,
+        aov: 180.00,
         children: [
           {
             id: 'g1',
@@ -83,7 +86,7 @@ const tableData: TableRowData[] = [
             isActive: true,
             expenses: 700.30,
             income: 3200.00,
-            romi: 356.8,
+            roas: 356.8,
             reach: 28000,
             impressions: 60000,
             cpm: 11.67,
@@ -98,6 +101,7 @@ const tableData: TableRowData[] = [
             cpql: 10.77,
             sales: 20,
             cps: 35.02,
+            aov: 160.00,
             children: [
               {
                 id: 'a1',
@@ -106,7 +110,7 @@ const tableData: TableRowData[] = [
                 isActive: true,
                 expenses: 400.00,
                 income: 1900.00,
-                romi: 375.0,
+                roas: 375.0,
                 reach: 16000,
                 impressions: 35000,
                 cpm: 11.43,
@@ -121,6 +125,7 @@ const tableData: TableRowData[] = [
                 cpql: 10.00,
                 sales: 12,
                 cps: 33.33,
+                aov: 158.33,
                 adId: '120211048752310195'
               },
               {
@@ -130,7 +135,7 @@ const tableData: TableRowData[] = [
                 isActive: true,
                 expenses: 300.30,
                 income: 1300.00,
-                romi: 332.9,
+                roas: 332.9,
                 reach: 12000,
                 impressions: 25000,
                 cpm: 12.01,
@@ -145,6 +150,7 @@ const tableData: TableRowData[] = [
                 cpql: 12.01,
                 sales: 8,
                 cps: 37.54,
+                aov: 162.50,
                 adId: '120211048752310196'
               }
             ]
@@ -156,7 +162,7 @@ const tableData: TableRowData[] = [
             isActive: true,
             expenses: 500.20,
             income: 2200.00,
-            romi: 339.8,
+            roas: 339.8,
             reach: 17000,
             impressions: 38000,
             cpm: 13.16,
@@ -171,6 +177,7 @@ const tableData: TableRowData[] = [
             cpql: 14.29,
             sales: 10,
             cps: 50.02,
+            aov: 220.00,
             children: [
               {
                 id: 'a3',
@@ -179,7 +186,7 @@ const tableData: TableRowData[] = [
                 isActive: true,
                 expenses: 500.20,
                 income: 2200.00,
-                romi: 339.8,
+                roas: 339.8,
                 reach: 17000,
                 impressions: 38000,
                 cpm: 13.16,
@@ -194,6 +201,7 @@ const tableData: TableRowData[] = [
                 cpql: 14.29,
                 sales: 10,
                 cps: 50.02,
+                aov: 220.00,
                 adId: '120211048752310197'
               }
             ]
@@ -207,7 +215,7 @@ const tableData: TableRowData[] = [
         isActive: true,
         expenses: 5428.59,
         income: 16157.49,
-        romi: 197.6,
+        roas: 197.6,
         reach: 1517998,
         impressions: 1676804,
         cpm: 3.23,
@@ -222,6 +230,7 @@ const tableData: TableRowData[] = [
         cpql: 17.28,
         sales: 77,
         cps: 70.50,
+        aov: 209.83,
         children: [
           {
             id: 'g3',
@@ -230,7 +239,7 @@ const tableData: TableRowData[] = [
             isActive: true,
             expenses: 3200.00,
             income: 10500.00,
-            romi: 228.1,
+            roas: 228.1,
             reach: 900000,
             impressions: 1000000,
             cpm: 3.20,
@@ -245,6 +254,7 @@ const tableData: TableRowData[] = [
             cpql: 16.84,
             sales: 48,
             cps: 66.67,
+            aov: 218.75,
             children: [
               {
                 id: 'a4',
@@ -253,7 +263,7 @@ const tableData: TableRowData[] = [
                 isActive: true,
                 expenses: 1800.00,
                 income: 6200.00,
-                romi: 244.4,
+                roas: 244.4,
                 reach: 520000,
                 impressions: 580000,
                 cpm: 3.10,
@@ -268,6 +278,7 @@ const tableData: TableRowData[] = [
                 cpql: 16.07,
                 sales: 28,
                 cps: 64.29,
+                aov: 221.43,
                 adId: '120211048752310198'
               },
               {
@@ -277,7 +288,7 @@ const tableData: TableRowData[] = [
                 isActive: true,
                 expenses: 1400.00,
                 income: 4300.00,
-                romi: 207.1,
+                roas: 207.1,
                 reach: 380000,
                 impressions: 420000,
                 cpm: 3.33,
@@ -292,6 +303,7 @@ const tableData: TableRowData[] = [
                 cpql: 17.95,
                 sales: 20,
                 cps: 70.00,
+                aov: 215.00,
                 adId: '120211048752310199'
               }
             ]
@@ -303,7 +315,7 @@ const tableData: TableRowData[] = [
             isActive: true,
             expenses: 2228.59,
             income: 5657.49,
-            romi: 153.9,
+            roas: 153.9,
             reach: 617998,
             impressions: 676804,
             cpm: 3.29,
@@ -318,6 +330,7 @@ const tableData: TableRowData[] = [
             cpql: 17.97,
             sales: 29,
             cps: 76.85,
+            aov: 195.09,
             children: [
               {
                 id: 'a6',
@@ -326,7 +339,7 @@ const tableData: TableRowData[] = [
                 isActive: true,
                 expenses: 2228.59,
                 income: 5657.49,
-                romi: 153.9,
+                roas: 153.9,
                 reach: 617998,
                 impressions: 676804,
                 cpm: 3.29,
@@ -341,6 +354,7 @@ const tableData: TableRowData[] = [
                 cpql: 17.97,
                 sales: 29,
                 cps: 76.85,
+                aov: 195.09,
                 adId: '120211048752310200'
               }
             ]
@@ -350,28 +364,94 @@ const tableData: TableRowData[] = [
     ]
   },
   {
-      id: 'p2',
-      name: 'Google Ads',
-      type: 'project',
-      isActive: false,
-      expenses: 1200.00,
-      income: 800.00,
-      romi: -33.3,
-      reach: 50000,
-      impressions: 60000,
-      cpm: 20.00,
-      clicks: 2000,
-      ctr: 3.33,
-      cpc: 0.60,
-      results: 200,
-      cpr: 6.00,
-      leads: 100,
-      cpl: 12.00,
-      qLeads: 20,
-      cpql: 60.00,
-      sales: 5,
-      cps: 240.00
+    id: 'p2',
+    name: 'Google Ads',
+    type: 'project',
+    isActive: false,
+    expenses: 1200.00,
+    income: 800.00,
+    roas: -33.3,
+    reach: 50000,
+    impressions: 60000,
+    cpm: 20.00,
+    clicks: 2000,
+    ctr: 3.33,
+    cpc: 0.60,
+    results: 200,
+    cpr: 6.00,
+    leads: 100,
+    cpl: 12.00,
+    qLeads: 20,
+    cpql: 60.00,
+    sales: 5,
+    cps: 240.00,
+    aov: 160.00,
   }
+];
+
+const mockLeadRecords: LeadRecord[] = [
+  {
+    id: 'l1', creationDate: '2025-09-15', phone: '+7 701 234 5678', contactType: 'Звонок',
+    deal: 'Консультация', leadType: 'Горячий', budget: 50000, status: 'Новый', pipeline: 'Основная',
+    ad: 'Баннер 1080x1080', creative: 'Скидка 20%', project: 'Facebook Ads', campaign: 'Remarketing Q3',
+    group: 'Ретаргетинг — посетители', responsible: 'Алексей П.', utmSource: 'facebook', utmMedium: 'cpc',
+    utmCampaign: 'remarketing_q3', utmContent: 'banner_1080', utmTerm: 'скидка',
+  },
+  {
+    id: 'l2', creationDate: '2025-09-14', phone: '+7 702 345 6789', contactType: 'Форма',
+    deal: 'Подписка Premium', leadType: 'Тёплый', budget: 120000, status: 'В работе', pipeline: 'Основная',
+    ad: 'Видео 15с', creative: 'Отзывы клиентов', project: 'Facebook Ads', campaign: 'Cold Traffic LAL',
+    group: 'LAL 1% — покупатели', responsible: 'Мария И.', utmSource: 'facebook', utmMedium: 'cpc',
+    utmCampaign: 'cold_lal1', utmContent: 'video_15s', utmTerm: 'отзывы',
+  },
+  {
+    id: 'l3', creationDate: '2025-09-13', phone: '+7 705 456 7890', contactType: 'WhatsApp',
+    deal: 'Настройка рекламы', leadType: 'Холодный', budget: 80000, status: 'Новый', pipeline: 'Основная',
+    ad: 'Статика — оффер', creative: 'CTA баннер', project: 'Facebook Ads', campaign: 'Cold Traffic LAL',
+    group: 'LAL 1% — лиды CRM', responsible: 'Дмитрий К.', utmSource: 'facebook', utmMedium: 'cpc',
+    utmCampaign: 'cold_lal1', utmContent: 'static_offer', utmTerm: 'настройка',
+  },
+  {
+    id: 'l4', creationDate: '2025-09-12', phone: '+7 707 567 8901', contactType: 'Звонок',
+    deal: 'Аудит рекламы', leadType: 'Горячий', budget: 30000, status: 'Завершён', pipeline: 'Быстрая',
+    ad: 'Карусель', creative: 'Товары из корзины', project: 'Facebook Ads', campaign: 'Remarketing Q3',
+    group: 'Ретаргетинг — корзина', responsible: 'Алексей П.', utmSource: 'facebook', utmMedium: 'cpc',
+    utmCampaign: 'remarketing_q3', utmContent: 'carousel', utmTerm: 'корзина',
+  },
+  {
+    id: 'l5', creationDate: '2025-09-11', phone: '+7 700 678 9012', contactType: 'Форма',
+    deal: 'Консультация', leadType: 'Тёплый', budget: 45000, status: 'В работе', pipeline: 'Основная',
+    ad: 'Видео 30с', creative: 'Демо продукта', project: 'Facebook Ads', campaign: 'Cold Traffic LAL',
+    group: 'LAL 1% — покупатели', responsible: 'Мария И.', utmSource: 'facebook', utmMedium: 'cpc',
+    utmCampaign: 'cold_lal1', utmContent: 'video_30s', utmTerm: 'демо',
+  },
+];
+
+const mockSaleRecords: SaleRecord[] = [
+  {
+    id: 's1', creationDate: '2025-09-10', phone: '+7 701 234 5678', contactType: 'Звонок',
+    deal: 'Консультация', leadType: 'Горячий', budget: 50000, status: 'Оплачен', pipeline: 'Основная',
+    ad: 'Баннер 1080x1080', creative: 'Скидка 20%', project: 'Facebook Ads', campaign: 'Remarketing Q3',
+    group: 'Ретаргетинг — посетители', responsible: 'Алексей П.', utmSource: 'facebook', utmMedium: 'cpc',
+    utmCampaign: 'remarketing_q3', utmContent: 'banner_1080', utmTerm: 'скидка',
+    saleDate: '2025-09-18', dealCycle: '8 дней',
+  },
+  {
+    id: 's2', creationDate: '2025-09-08', phone: '+7 707 567 8901', contactType: 'Звонок',
+    deal: 'Аудит рекламы', leadType: 'Горячий', budget: 30000, status: 'Оплачен', pipeline: 'Быстрая',
+    ad: 'Карусель', creative: 'Товары из корзины', project: 'Facebook Ads', campaign: 'Remarketing Q3',
+    group: 'Ретаргетинг — корзина', responsible: 'Алексей П.', utmSource: 'facebook', utmMedium: 'cpc',
+    utmCampaign: 'remarketing_q3', utmContent: 'carousel', utmTerm: 'корзина',
+    saleDate: '2025-09-20', dealCycle: '12 дней',
+  },
+  {
+    id: 's3', creationDate: '2025-09-05', phone: '+7 702 345 6789', contactType: 'Форма',
+    deal: 'Подписка Premium', leadType: 'Тёплый', budget: 120000, status: 'Оплачен', pipeline: 'Основная',
+    ad: 'Видео 15с', creative: 'Отзывы клиентов', project: 'Facebook Ads', campaign: 'Cold Traffic LAL',
+    group: 'LAL 1% — покупатели', responsible: 'Мария И.', utmSource: 'facebook', utmMedium: 'cpc',
+    utmCampaign: 'cold_lal1', utmContent: 'video_15s', utmTerm: 'отзывы',
+    saleDate: '2025-09-22', dealCycle: '17 дней',
+  },
 ];
 
 const Dashboard: React.FC = () => {
@@ -392,9 +472,9 @@ const Dashboard: React.FC = () => {
               <div className="sm:col-span-3">
                   <IncomeExpenseWidget income={21557.49} expense={6629.09} />
               </div>
-              {/* ROMI - 2 cols */}
+              {/* ROAS - 2 cols */}
               <div className="sm:col-span-2">
-                  <RomiGauge value={225.2} />
+                  <RoasGauge value={225.2} />
               </div>
           </div>
 
@@ -406,7 +486,7 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Bottom Section - Data Table */}
-      <DataTable data={tableData} />
+      <DataTable data={tableData} leadRecords={mockLeadRecords} saleRecords={mockSaleRecords} />
     </div>
   );
 };

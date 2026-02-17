@@ -64,7 +64,7 @@ const FunnelChart: React.FC<FunnelChartProps> = ({ data }) => {
                   width={badgeWidth}
                   height={badgeHeight}
                   rx={badgeHeight / 2}
-                  fill="#2E7D32"
+                  fill="hsl(162, 100%, 20%)"
                 />
                 <text
                   x={x + barWidth / 2}

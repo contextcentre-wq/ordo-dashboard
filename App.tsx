@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/pages/Dashboard';
-import Sources from './components/pages/Sources';
-import Audiences from './components/pages/Audiences';
+import Members from './components/pages/Members';
 import Settings from './components/pages/Settings';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
@@ -37,10 +36,8 @@ const App: React.FC = () => {
     switch (activePage) {
       case 'dashboard':
         return <Dashboard />;
-      case 'sources':
-        return <Sources />;
-      case 'audiences':
-        return <Audiences />;
+      case 'members':
+        return <Members />;
       case 'settings':
         return <Settings onLogout={handleLogout} />;
       default:
@@ -51,7 +48,7 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-ordo-bg font-sans text-ordo-text">
       <Sidebar activePage={activePage} onNavigate={setActivePage} />
-      
+
       {/* Main Content Area */}
       <main className="md:ml-[70px]">
         {renderPage()}

@@ -1,11 +1,13 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { TableRowData } from '../types';
+import { TableRowData, LeadRecord, SaleRecord } from '../types';
 import { ChevronDown, ChevronRight, Filter, X, Image } from 'lucide-react';
 import DateRangePicker, { DateRange } from './DateRangePicker';
 import { useIsMobile } from '../hooks/useIsMobile';
 
 interface DataTableProps {
   data: TableRowData[];
+  leadRecords?: LeadRecord[];
+  saleRecords?: SaleRecord[];
 }
 
 type HierarchyTab = 'projects' | 'campaigns' | 'groups' | 'ads';
@@ -26,15 +28,15 @@ interface EnrichedRow extends TableRowData {
   parentGroupName?: string;
 }
 
-const DataTable: React.FC<DataTableProps> = ({ data }) => {
+const DataTable: React.FC<DataTableProps> = ({ data, leadRecords = [], saleRecords = [] }) => {
   const isMobile = useIsMobile();
   const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
   const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({});
   const [activeTab, setActiveTab] = useState<ActiveTab>('projects');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [dateRange, setDateRange] = useState<DateRange>({
-    start: new Date(2025, 8, 1),  // 01.09.2025
-    end: new Date(2025, 8, 30),   // 30.09.2025
+    start: new Date(2025, 8, 1),
+    end: new Date(2025, 8, 30),
   });
 
   const toggleRow = (id: string) => {
@@ -79,7 +81,7 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
     return result;
   }, []);
 
-  // Get the source items depending on selection — if projects are selected, scope down
+  // Get the source items depending on selection
   const scopedSource = useMemo(() => {
     if (selectedIds.size === 0) return data;
     return data.filter(row => selectedIds.has(row.id));
@@ -87,6 +89,9 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
 
   const isHierarchyTab = (tab: ActiveTab): tab is HierarchyTab =>
     ['projects', 'campaigns', 'groups', 'ads'].includes(tab);
+
+  const isCounterTab = (tab: ActiveTab): tab is CounterTab =>
+    ['leads', 'qleads', 'sales'].includes(tab);
 
   const effectiveHierarchyTab: HierarchyTab =
     isHierarchyTab(activeTab) ? activeTab : 'projects';
@@ -223,12 +228,162 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
     }
   }, [effectiveHierarchyTab]);
 
+  // --- CRM Table rendering ---
+
+  const renderCrmTable = () => {
+    const isSalesTab = activeTab === 'sales';
+    const records: (LeadRecord | SaleRecord)[] = isSalesTab ? saleRecords : leadRecords;
+
+    if (isMobile) {
+      return (
+        <div className="p-4 space-y-3">
+          {records.map(record => {
+            const isExpanded = expandedCards[record.id];
+            return (
+              <div key={record.id} className="border border-gray-100 rounded-xl p-4 bg-white">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-900">{record.phone}</span>
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                    record.status === 'Новый' ? 'bg-blue-100 text-blue-700' :
+                    record.status === 'В работе' ? 'bg-yellow-100 text-yellow-700' :
+                    record.status === 'Оплачен' ? 'bg-green-100 text-green-700' :
+                    record.status === 'Завершён' ? 'bg-gray-100 text-gray-700' :
+                    'bg-gray-100 text-gray-600'
+                  }`}>
+                    {record.status}
+                  </span>
+                </div>
+                <div className="text-xs text-gray-400 mb-1">{record.creationDate} &middot; {record.contactType}</div>
+                <div className="text-sm text-gray-700">{record.deal}</div>
+
+                {isExpanded && (
+                  <div className="mt-3 pt-3 border-t border-gray-100 grid grid-cols-2 gap-x-4 gap-y-2">
+                    <div className="flex justify-between"><span className="text-xs text-gray-400">Тип лида</span><span className="text-xs text-gray-700">{record.leadType}</span></div>
+                    <div className="flex justify-between"><span className="text-xs text-gray-400">Бюджет</span><span className="text-xs font-mono text-gray-700">{formatNumber(record.budget)} &#8376;</span></div>
+                    <div className="flex justify-between"><span className="text-xs text-gray-400">Pipeline</span><span className="text-xs text-gray-700">{record.pipeline}</span></div>
+                    <div className="flex justify-between"><span className="text-xs text-gray-400">Проект</span><span className="text-xs text-gray-700">{record.project}</span></div>
+                    <div className="flex justify-between"><span className="text-xs text-gray-400">Кампания</span><span className="text-xs text-gray-700">{record.campaign}</span></div>
+                    <div className="flex justify-between"><span className="text-xs text-gray-400">Группа</span><span className="text-xs text-gray-700">{record.group}</span></div>
+                    <div className="flex justify-between"><span className="text-xs text-gray-400">Ответственный</span><span className="text-xs text-gray-700">{record.responsible}</span></div>
+                    {isSalesTab && 'saleDate' in record && (
+                      <>
+                        <div className="flex justify-between"><span className="text-xs text-gray-400">Дата продажи</span><span className="text-xs text-gray-700">{(record as SaleRecord).saleDate}</span></div>
+                        <div className="flex justify-between"><span className="text-xs text-gray-400">Цикл сделки</span><span className="text-xs text-gray-700">{(record as SaleRecord).dealCycle}</span></div>
+                      </>
+                    )}
+                  </div>
+                )}
+
+                <button
+                  onClick={() => toggleCard(record.id)}
+                  className="mt-3 w-full text-center text-xs font-medium text-ordo-darkGreen min-h-[44px] flex items-center justify-center"
+                >
+                  {isExpanded ? 'Свернуть' : 'Подробнее'}
+                </button>
+              </div>
+            );
+          })}
+          {records.length === 0 && (
+            <div className="text-center text-gray-400 py-8 text-sm">Нет данных</div>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <div className="overflow-x-auto overflow-y-hidden grow">
+        <table className="min-w-full">
+          <thead>
+            <tr className="bg-white border-b border-gray-100 text-left">
+              <th className="px-4 py-3 font-medium text-xs text-gray-400 uppercase tracking-wider">Дата</th>
+              <th className="px-4 py-3 font-medium text-xs text-gray-400 uppercase tracking-wider">Телефон</th>
+              <th className="px-4 py-3 font-medium text-xs text-gray-400 uppercase tracking-wider">Тип контакта</th>
+              <th className="px-4 py-3 font-medium text-xs text-gray-400 uppercase tracking-wider">Сделка</th>
+              <th className="px-4 py-3 font-medium text-xs text-gray-400 uppercase tracking-wider">Тип лида</th>
+              <th className="px-4 py-3 font-medium text-xs text-gray-400 uppercase tracking-wider">Бюджет</th>
+              <th className="px-4 py-3 font-medium text-xs text-gray-400 uppercase tracking-wider">Статус</th>
+              <th className="px-4 py-3 font-medium text-xs text-gray-400 uppercase tracking-wider">Pipeline</th>
+              <th className="px-4 py-3 font-medium text-xs text-gray-400 uppercase tracking-wider">Объявление</th>
+              <th className="px-4 py-3 font-medium text-xs text-gray-400 uppercase tracking-wider">Креатив</th>
+              <th className="px-4 py-3 font-medium text-xs text-gray-400 uppercase tracking-wider">Проект</th>
+              <th className="px-4 py-3 font-medium text-xs text-gray-400 uppercase tracking-wider">Кампания</th>
+              <th className="px-4 py-3 font-medium text-xs text-gray-400 uppercase tracking-wider">Группа</th>
+              <th className="px-4 py-3 font-medium text-xs text-gray-400 uppercase tracking-wider">Ответственный</th>
+              <th className="px-4 py-3 font-medium text-xs text-gray-400 uppercase tracking-wider">UTM Source</th>
+              <th className="px-4 py-3 font-medium text-xs text-gray-400 uppercase tracking-wider">UTM Medium</th>
+              <th className="px-4 py-3 font-medium text-xs text-gray-400 uppercase tracking-wider">UTM Campaign</th>
+              {isSalesTab && (
+                <>
+                  <th className="px-4 py-3 font-medium text-xs text-gray-400 uppercase tracking-wider">Дата продажи</th>
+                  <th className="px-4 py-3 font-medium text-xs text-gray-400 uppercase tracking-wider">Цикл сделки</th>
+                </>
+              )}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {records.map(record => (
+              <tr key={record.id} className="hover:bg-gray-50 bg-white">
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{record.creationDate}</td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm font-mono text-gray-900">{record.phone}</td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{record.contactType}</td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{record.deal}</td>
+                <td className="px-4 py-3 whitespace-nowrap">
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                    record.leadType === 'Горячий' ? 'bg-red-100 text-red-700' :
+                    record.leadType === 'Тёплый' ? 'bg-yellow-100 text-yellow-700' :
+                    'bg-blue-100 text-blue-700'
+                  }`}>
+                    {record.leadType}
+                  </span>
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm font-mono text-gray-900">{formatNumber(record.budget)} &#8376;</td>
+                <td className="px-4 py-3 whitespace-nowrap">
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                    record.status === 'Новый' ? 'bg-blue-100 text-blue-700' :
+                    record.status === 'В работе' ? 'bg-yellow-100 text-yellow-700' :
+                    record.status === 'Оплачен' ? 'bg-green-100 text-green-700' :
+                    'bg-gray-100 text-gray-600'
+                  }`}>
+                    {record.status}
+                  </span>
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{record.pipeline}</td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{record.ad}</td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{record.creative}</td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{record.project}</td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{record.campaign}</td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{record.group}</td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{record.responsible}</td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm font-mono text-gray-400">{record.utmSource}</td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm font-mono text-gray-400">{record.utmMedium}</td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm font-mono text-gray-400">{record.utmCampaign}</td>
+                {isSalesTab && 'saleDate' in record && (
+                  <>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{(record as SaleRecord).saleDate}</td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{(record as SaleRecord).dealCycle}</td>
+                  </>
+                )}
+              </tr>
+            ))}
+            {records.length === 0 && (
+              <tr>
+                <td colSpan={isSalesTab ? 19 : 17} className="text-center text-gray-400 py-8 text-sm">
+                  Нет данных
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
   // --- Mobile card rendering ---
 
   const renderMobileCard = (row: EnrichedRow) => {
     const isCardExpanded = expandedCards[row.id];
     const isSelected = selectedIds.has(row.id);
-    const romiBgColor = row.romi >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+    const roasBgColor = row.roas >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
 
     return (
       <div key={row.id} className={`border border-gray-100 rounded-xl p-4 ${isSelected ? 'bg-green-50/50 border-green-200' : 'bg-white'}`}>
@@ -241,8 +396,8 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
             className="rounded border-gray-300 text-ordo-green focus:ring-ordo-green bg-white accent-ordo-green shrink-0"
           />
           <span className="text-sm font-medium text-gray-900 flex-1 min-w-0 truncate">{row.name}</span>
-          <span className={`text-xs font-bold px-2 py-0.5 rounded-full shrink-0 ${romiBgColor}`}>
-            {row.romi}%
+          <span className={`text-xs font-bold px-2 py-0.5 rounded-full shrink-0 ${roasBgColor}`}>
+            {row.roas}%
           </span>
         </div>
 
@@ -257,15 +412,15 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
             <div className="text-sm font-mono font-semibold text-gray-900">{formatCurrency(row.income)}</div>
           </div>
           <div>
-            <div className="text-[10px] text-gray-400 uppercase font-medium">ROMI</div>
-            <div className="text-sm font-mono font-bold text-gray-900">{row.romi}%</div>
+            <div className="text-[10px] text-gray-400 uppercase font-medium">ROAS</div>
+            <div className="text-sm font-mono font-bold text-gray-900">{row.roas}%</div>
           </div>
         </div>
 
         {/* Expandable details */}
         {isCardExpanded && (
           <div className="mt-3 pt-3 border-t border-gray-100 space-y-3">
-            {/* Text metrics — 2 columns */}
+            {/* Text metrics */}
             <div className="grid grid-cols-2 gap-x-4 gap-y-2">
               <div className="flex justify-between">
                 <span className="text-xs text-gray-400">Охваты</span>
@@ -293,7 +448,7 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
               </div>
             </div>
 
-            {/* Bar metrics — full width horizontal bars */}
+            {/* Bar metrics */}
             <div className="space-y-2">
               {([
                 { label: 'Результаты', value: row.results, cost: row.cpr, costLabel: 'CPR', max: maxResults },
@@ -397,7 +552,7 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
           {/* Metric columns */}
           <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{formatCurrency(row.expenses)}</td>
           <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{formatCurrency(row.income)}</td>
-          <td className="px-4 py-4 whitespace-nowrap text-sm font-mono font-bold text-gray-900">{row.romi}%</td>
+          <td className="px-4 py-4 whitespace-nowrap text-sm font-mono font-bold text-gray-900">{row.roas}%</td>
           <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{formatNumber(row.reach)}</td>
           <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{formatNumber(row.impressions)}</td>
           <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{formatCurrency(row.cpm)}</td>
@@ -407,7 +562,7 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
           <td className="px-4 py-4 whitespace-nowrap">{renderBar(row.results, maxResults)}</td>
           <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{formatCurrency(row.cpr)}</td>
 
-          {/* Лиды / CPL — only for campaigns, groups, ads */}
+          {/* Лиды / CPL */}
           {showLeadsCpl && (
             <>
               <td className="px-4 py-4 whitespace-nowrap">{renderBar(row.leads, maxLeads)}</td>
@@ -420,7 +575,7 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
           <td className="px-4 py-4 whitespace-nowrap">{renderBar(row.sales, maxSales)}</td>
           <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{formatCurrency(row.cps)}</td>
 
-          {/* AD ID — only for ads */}
+          {/* AD ID */}
           {showAdId && (
             <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-400">{row.adId || '—'}</td>
           )}
@@ -443,7 +598,7 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
         onClick={() => handleTabChange(tab)}
         className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition-colors ${
           isActive
-            ? 'bg-green-50 text-ordo-darkGreen'
+            ? 'bg-ordo-lightGreen text-ordo-darkGreen'
             : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
         }`}
       >
@@ -473,7 +628,7 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
         onClick={() => handleTabChange(tab)}
         className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition-colors ${
           isActive
-            ? 'bg-green-50 text-ordo-darkGreen'
+            ? 'bg-ordo-lightGreen text-ordo-darkGreen'
             : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
         }`}
       >
@@ -506,8 +661,10 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
         </div>
       </div>
 
-      {/* Mobile: Card view / Desktop: Table */}
-      {isMobile ? (
+      {/* Content: CRM table for counter tabs, metric table for hierarchy tabs */}
+      {isCounterTab(activeTab) ? (
+        renderCrmTable()
+      ) : isMobile ? (
         <div className="p-4 space-y-3">
           {visibleRows.map(row => renderMobileCard(row))}
         </div>
@@ -534,7 +691,7 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
                 <th className="px-4 py-3 font-medium text-xs text-gray-400 uppercase tracking-wider">Аккаунт</th>
                 <th className="px-4 py-3 font-medium text-xs text-gray-400 uppercase tracking-wider">{renderHeader('Расходы')}</th>
                 <th className="px-4 py-3 font-medium text-xs text-gray-400 uppercase tracking-wider">{renderHeader('Доходы')}</th>
-                <th className="px-4 py-3 font-medium text-xs text-gray-400 uppercase tracking-wider">{renderHeader('ROMI')}</th>
+                <th className="px-4 py-3 font-medium text-xs text-gray-400 uppercase tracking-wider">{renderHeader('ROAS')}</th>
                 <th className="px-4 py-3 font-medium text-xs text-gray-400 uppercase tracking-wider">{renderHeader('Охваты')}</th>
                 <th className="px-4 py-3 font-medium text-xs text-gray-400 uppercase tracking-wider">{renderHeader('Показы')}</th>
                 <th className="px-4 py-3 font-medium text-xs text-gray-400 uppercase tracking-wider">{renderHeader('CPM')}</th>

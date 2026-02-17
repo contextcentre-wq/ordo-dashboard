@@ -7,7 +7,7 @@ interface KpiGridProps {
 
 const KpiGrid: React.FC<KpiGridProps> = ({ metrics }) => {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 w-full bg-white p-4 md:p-6 rounded-xl border border-gray-100 shadow-sm mt-6">
+    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4 w-full bg-white p-4 md:p-6 rounded-xl border border-gray-100 shadow-sm mt-6">
       {metrics.map((metric, idx) => (
         <div key={idx} className="flex flex-col space-y-1 p-2 border-r last:border-r-0 border-gray-100 border-dashed md:border-solid md:last:border-none">
           <div className="flex items-center space-x-1">
