@@ -213,7 +213,7 @@ export const getDashboardSummary = query({
         label: "Охваты",
         value: totalReach,
         displayValue: formatDisplayValue(totalReach),
-        conversionRate: 100,
+        conversionRate: 0,
       },
       {
         label: "Показы",
