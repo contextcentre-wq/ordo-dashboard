@@ -19,6 +19,19 @@ export interface Metric {
   value: string;
 }
 
+export interface AdminMetrics {
+  appointmentsScheduled: number;
+  appointmentsAttended: number;
+  salesCount: number;
+  conversionToAppointment: number;
+  conversionToShowUp: number;
+}
+
+export interface DoctorMetrics {
+  averageCheck: number;
+  conversionToTotal: number;
+}
+
 export interface TableRowData {
   id: string;
   name: string;

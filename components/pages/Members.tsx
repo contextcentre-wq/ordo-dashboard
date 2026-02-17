@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
+import { useQuery, useMutation } from "convex/react";
+import { api } from "../../convex/_generated/api";
+import { Doc, Id } from "../../convex/_generated/dataModel";
 import Header from '../Header';
 import { Search, X, ChevronDown, MoreHorizontal, Plus } from 'lucide-react';
-import { Member, Project } from '../../types';
+import { Member } from '../../types';
 import { useIsMobile } from '../../hooks/useIsMobile';
 
 const MONTHS_RU = [
@@ -9,17 +12,12 @@ const MONTHS_RU = [
   'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
 ];
 
-const formatMemberDate = (iso: string, time: string): string => {
-  const d = new Date(iso);
-  return `${d.getDate()} ${MONTHS_RU[d.getMonth()]}, ${time}`;
+const formatMemberDate = (ts: number): string => {
+  const d = new Date(ts);
+  const hours = String(d.getHours()).padStart(2, '0');
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+  return `${d.getDate()} ${MONTHS_RU[d.getMonth()]}, ${hours}:${minutes}`;
 };
-
-const mockMembers: Member[] = [
-  { id: 'm1', phone: '+7 (747) 319 10-04', status: 'active', registrationDate: '2024-12-01', role: 'owner' },
-  { id: 'm2', phone: '+7 (778) 407 68-86', status: 'active', registrationDate: '2025-02-13', role: 'admin' },
-  { id: 'm3', phone: '+7 (705) 825 55-16', status: 'invited', registrationDate: '2025-02-13', role: 'user' },
-  { id: 'm4', phone: '+7 (706) 666 76-96', status: 'active', registrationDate: '2025-01-20', role: 'user' },
-];
 
 const ROLE_LABELS: Record<Member['role'], string> = {
   owner: 'Владелец',
@@ -32,37 +30,96 @@ const STATUS_LABELS: Record<Member['status'], string> = {
   invited: 'приглашён',
 };
 
-const CURRENT_USER_ID = 'm1';
+interface MembersProps {
+  project: Doc<"projects">;
+  userId: Id<"users">;
+}
 
-const Members: React.FC<{ project: Project }> = ({ project }) => {
+const Members: React.FC<MembersProps> = ({ project, userId }) => {
   const isMobile = useIsMobile();
-  const [members, setMembers] = useState<Member[]>(mockMembers);
   const [searchQuery, setSearchQuery] = useState('');
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
   const [invitePhone, setInvitePhone] = useState('');
-  const [inviteRole, setInviteRole] = useState<Member['role']>('user');
+  const [inviteRole, setInviteRole] = useState<'admin' | 'user'>('user');
+  const [inviteError, setInviteError] = useState('');
+
+  const rawMembers = useQuery(api.members.listByProject, {
+    projectId: project._id,
+    userId,
+  });
+
+  const inviteMutation = useMutation(api.members.invite);
+  const updateRoleMutation = useMutation(api.members.updateRole);
+
+  if (rawMembers === undefined) {
+    return (
+      <div>
+        <Header projectName={project.name} />
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">Участники</h1>
+          <p className="text-gray-500 text-sm mt-1">Управление участниками, их доступом и взаимодействиями</p>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 animate-pulse">
+          <div className="space-y-4">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-12 bg-gray-100 rounded" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Map Convex members to display format
+  const members = rawMembers.map(m => ({
+    _id: m._id,
+    id: m._id as string,
+    phone: m.phone || m.email || '',
+    email: m.email,
+    name: m.name,
+    status: m.status as 'active' | 'invited',
+    role: m.role as 'owner' | 'admin' | 'user',
+    invitedAt: m.invitedAt,
+    joinedAt: m.joinedAt,
+    userId: m.userId,
+  }));
 
   const filteredMembers = members.filter(m =>
-    m.phone.includes(searchQuery)
+    m.phone.includes(searchQuery) || m.email.includes(searchQuery) || m.name.includes(searchQuery)
   );
 
-  const handleInvite = () => {
-    if (!invitePhone.trim()) return;
-    const newMember: Member = {
-      id: `m${Date.now()}`,
-      phone: invitePhone,
-      status: 'invited',
-      registrationDate: new Date().toISOString().split('T')[0],
-      role: inviteRole,
-    };
-    setMembers(prev => [...prev, newMember]);
-    setInvitePhone('');
-    setInviteRole('user');
-    setShowInviteModal(false);
+  const handleInvite = async () => {
+    if (!inviteEmail.trim()) return;
+    setInviteError('');
+    try {
+      await inviteMutation({
+        projectId: project._id,
+        userId,
+        email: inviteEmail.trim(),
+        phone: invitePhone.trim() || undefined,
+        role: inviteRole,
+      });
+      setInviteEmail('');
+      setInvitePhone('');
+      setInviteRole('user');
+      setShowInviteModal(false);
+    } catch (err: any) {
+      setInviteError(err.message || 'Ошибка при приглашении');
+    }
   };
 
-  const handleRoleChange = (id: string, newRole: Member['role']) => {
-    setMembers(prev => prev.map(m => m.id === id ? { ...m, role: newRole } : m));
+  const handleRoleChange = async (memberId: string, newRole: Member['role']) => {
+    if (newRole === 'owner') return; // Cannot assign owner role
+    try {
+      await updateRoleMutation({
+        memberId: memberId as Id<"members">,
+        userId,
+        newRole: newRole as 'admin' | 'user',
+      });
+    } catch (err: any) {
+      console.error('Failed to update role:', err.message);
+    }
   };
 
   return (
@@ -99,16 +156,13 @@ const Members: React.FC<{ project: Project }> = ({ project }) => {
       {isMobile ? (
         <div className="space-y-3">
           {filteredMembers.map(member => {
-            const isCurrentUser = member.id === CURRENT_USER_ID;
-            const dateDisplay = formatMemberDate(
-              member.registrationDate,
-              member.id === 'm1' ? '17:57' : member.id === 'm2' ? '14:29' : member.id === 'm3' ? '14:29' : '09:15'
-            );
+            const isCurrentUser = member.userId === userId;
+            const dateDisplay = formatMemberDate(member.joinedAt ?? member.invitedAt);
             return (
               <div key={member.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-sm font-medium text-gray-900 whitespace-nowrap">{member.phone}</span>
+                    <span className="text-sm font-medium text-gray-900 whitespace-nowrap">{member.phone || member.email}</span>
                     {isCurrentUser && (
                       <span className="inline-flex items-center px-1.5 h-5 rounded-full text-[10px] font-medium bg-ordo-lightGreen text-ordo-green shrink-0">
                         вы
@@ -164,17 +218,14 @@ const Members: React.FC<{ project: Project }> = ({ project }) => {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {filteredMembers.map(member => {
-                  const isCurrentUser = member.id === CURRENT_USER_ID;
-                  const dateDisplay = formatMemberDate(
-                    member.registrationDate,
-                    member.id === 'm1' ? '17:57' : member.id === 'm2' ? '14:29' : member.id === 'm3' ? '14:29' : '09:15'
-                  );
+                  const isCurrentUser = member.userId === userId;
+                  const dateDisplay = formatMemberDate(member.joinedAt ?? member.invitedAt);
 
                   return (
                     <tr key={member.id} className="hover:bg-gray-50/60 transition-colors group">
                       <td className="px-3 py-3">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-gray-900">{member.phone}</span>
+                          <span className="text-sm font-medium text-gray-900">{member.phone || member.email}</span>
                           {isCurrentUser && (
                             <span className="inline-flex items-center px-1.5 h-6 rounded-full text-tiny font-medium bg-ordo-lightGreen text-ordo-green">
                               вы
@@ -245,10 +296,21 @@ const Members: React.FC<{ project: Project }> = ({ project }) => {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Номер телефона</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input
+                  type="email"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  placeholder="name@company.com"
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-ordo-green/20 focus:border-ordo-green"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Номер телефона (необязательно)</label>
                 <div className="flex items-center">
                   <div className="flex items-center gap-1.5 px-3 py-2.5 bg-gray-50 border border-r-0 border-gray-200 rounded-l-lg text-sm text-gray-600">
-                    &#x1F1F0;&#x1F1FF; +7
+                    +7
                   </div>
                   <input
                     type="tel"
@@ -265,7 +327,7 @@ const Members: React.FC<{ project: Project }> = ({ project }) => {
                 <div className="relative">
                   <select
                     value={inviteRole}
-                    onChange={(e) => setInviteRole(e.target.value as Member['role'])}
+                    onChange={(e) => setInviteRole(e.target.value as 'admin' | 'user')}
                     className="w-full appearance-none bg-white border border-gray-200 rounded-lg px-3 py-2.5 pr-8 text-sm text-gray-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-ordo-green/20 focus:border-ordo-green"
                   >
                     <option value="admin">Админ</option>
@@ -274,6 +336,10 @@ const Members: React.FC<{ project: Project }> = ({ project }) => {
                   <ChevronDown className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 </div>
               </div>
+
+              {inviteError && (
+                <p className="text-sm text-red-500">{inviteError}</p>
+              )}
 
               <button
                 onClick={handleInvite}

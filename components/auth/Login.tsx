@@ -1,11 +1,46 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useMutation } from "convex/react";
+import { api } from "../../convex/_generated/api";
 
 interface LoginProps {
-    onLogin: () => void;
+    onLogin: (userId: string) => void;
     onSwitchToRegister: () => void;
 }
 
+const ERROR_MESSAGES: [RegExp, string][] = [
+  [/User not found/i, 'Пользователь с таким email не найден'],
+  [/Email already registered/i, 'Этот email уже зарегистрирован'],
+  [/Access denied/i, 'Доступ запрещён'],
+];
+
+function humanizeError(err: any): string {
+  const raw = err?.data ?? err?.message ?? '';
+  for (const [pattern, message] of ERROR_MESSAGES) {
+    if (pattern.test(raw)) return message;
+  }
+  return 'Ошибка входа';
+}
+
 const Login: React.FC<LoginProps> = ({ onLogin, onSwitchToRegister }) => {
+  const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const loginMutation = useMutation(api.auth.login);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      const result = await loginMutation({ email });
+      onLogin(result._id);
+    } catch (err: any) {
+      setError(humanizeError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#F0F4F8] flex flex-col items-center justify-center p-4">
         <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
@@ -13,35 +48,29 @@ const Login: React.FC<LoginProps> = ({ onLogin, onSwitchToRegister }) => {
                 <p className="text-gray-500">Войдите, чтобы продолжить работу</p>
             </div>
 
-            <form onSubmit={(e) => { e.preventDefault(); onLogin(); }} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <input 
-                        type="email" 
+                    <input
+                        type="email"
                         placeholder="name@company.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
                         className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all bg-gray-50 focus:bg-white text-gray-900 placeholder-gray-400"
-                        required 
-                    />
-                </div>
-                
-                <div>
-                    <div className="flex justify-between items-center mb-1">
-                        <label className="block text-sm font-medium text-gray-700">Пароль</label>
-                        <a href="#" className="text-xs text-ordo-green hover:text-ordo-darkGreen font-medium">Забыли пароль?</a>
-                    </div>
-                    <input 
-                        type="password" 
-                        placeholder="••••••••"
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all bg-gray-50 focus:bg-white text-gray-900 placeholder-gray-400"
-                        required 
+                        required
                     />
                 </div>
 
-                <button 
-                    type="submit" 
-                    className="w-full py-3.5 bg-ordo-green text-white rounded-xl font-bold text-lg hover:bg-ordo-darkGreen transition-all transform hover:scale-[1.02] shadow-lg shadow-sky-200"
+                {error && (
+                  <p className="text-sm text-red-500">{error}</p>
+                )}
+
+                <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full py-3.5 bg-ordo-green text-white rounded-xl font-bold text-lg hover:bg-ordo-darkGreen transition-all transform hover:scale-[1.02] shadow-lg shadow-sky-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    Войти
+                    {loading ? 'Вход...' : 'Войти'}
                 </button>
             </form>
 

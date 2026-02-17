@@ -23,7 +23,7 @@ const IncomeExpenseWidget: React.FC<IncomeExpenseProps> = ({ income, expense }) 
 
   return (
     <div className="bg-white px-4 py-3 md:px-5 md:py-4 rounded-2xl border border-gray-100/80 shadow-md shadow-sky-100/20 flex flex-col justify-between h-full">
-      <h3 className="text-gray-500 font-medium text-xs flex items-center gap-1 mb-1">
+      <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-1 mb-1">
         Доход/Расходы
         <span className="text-gray-300 cursor-help text-[10px]">ⓘ</span>
       </h3>

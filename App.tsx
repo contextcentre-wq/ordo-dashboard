@@ -1,4 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useQuery, useMutation } from "convex/react";
+import { api } from "./convex/_generated/api";
+import { Id } from "./convex/_generated/dataModel";
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/pages/Dashboard';
 import Analytics from './components/pages/Analytics';
@@ -7,27 +10,26 @@ import Settings from './components/pages/Settings';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import ProjectSelect from './components/ProjectSelect';
-import { Page, Project } from './types';
+import { Page } from './types';
 import { useIsMobile } from './hooks/useIsMobile';
 import { ChevronsUpDown, Check, ArrowLeft } from 'lucide-react';
 
-const INITIAL_PROJECTS: Project[] = [
-  { id: 'p1', name: 'CL128', createdAt: '12 января 2025' },
-  { id: 'p2', name: 'Marketing Pro', createdAt: '3 февраля 2025' },
-  { id: 'p3', name: 'Innovo Dent', createdAt: '18 февраля 2025' },
-];
-
 const App: React.FC = () => {
   const isMobile = useIsMobile();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userId, setUserId] = useState<Id<"users"> | null>(() => {
+    const stored = localStorage.getItem('ordo_userId');
+    return stored ? (stored as Id<"users">) : null;
+  });
   const [authView, setAuthView] = useState<'login' | 'register'>('login');
   const [activePage, setActivePage] = useState<Page>('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileProjectDropdown, setMobileProjectDropdown] = useState(false);
   const mobileDropdownRef = useRef<HTMLDivElement>(null);
 
-  const [projects, setProjects] = useState<Project[]>(INITIAL_PROJECTS);
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
+
+  const projects = useQuery(api.projects.list, userId ? { userId } : "skip");
+  const createProject = useMutation(api.projects.create);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -41,11 +43,19 @@ const App: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [mobileProjectDropdown]);
 
-  const activeProject = projects.find(p => p.id === activeProjectId);
+  const activeProject = projects?.find(p => p?._id === activeProjectId);
 
-  const handleLogin = () => {
-    setIsAuthenticated(true);
+  const handleLogin = (newUserId: string) => {
+    const id = newUserId as Id<"users">;
+    setUserId(id);
+    localStorage.setItem('ordo_userId', newUserId);
     setActivePage('dashboard');
+  };
+
+  const handleLogout = () => {
+    setUserId(null);
+    localStorage.removeItem('ordo_userId');
+    setActiveProjectId(null);
   };
 
   const handleSelectProject = (id: string) => {
@@ -53,20 +63,18 @@ const App: React.FC = () => {
     setActivePage('dashboard');
   };
 
-  const handleCreateProject = (name: string) => {
-    const newProject: Project = {
-      id: `p${Date.now()}`,
-      name,
-      createdAt: new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }),
-    };
-    setProjects(prev => [...prev, newProject]);
-    setActiveProjectId(newProject.id);
+  const handleCreateProject = async (name: string) => {
+    if (!userId) return;
+    const projectId = await createProject({ name, userId });
+    setActiveProjectId(projectId);
     setActivePage('dashboard');
   };
 
   const handleBackToProjects = () => {
     setActiveProjectId(null);
   };
+
+  const isAuthenticated = userId !== null;
 
   // Phase 1: Auth
   if (!isAuthenticated) {
@@ -77,11 +85,29 @@ const App: React.FC = () => {
     }
   }
 
-  // Phase 2: Project selection
+  // Phase 2: Loading projects
+  if (projects === undefined) {
+    return (
+      <div className="min-h-screen bg-[#F0F4F8] flex items-center justify-center">
+        <div className="text-gray-500">Загрузка проектов...</div>
+      </div>
+    );
+  }
+
+  // Map projects to display format (used by both ProjectSelect and Sidebar)
+  const formatProject = (p: NonNullable<(typeof projects)[number]>) => ({
+    id: p._id,
+    name: p.name,
+    createdAt: new Date(p.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }),
+  });
+
+  const mappedProjects = projects.filter(Boolean).map(p => formatProject(p!));
+
+  // Phase 2b: Project selection
   if (!activeProject) {
     return (
       <ProjectSelect
-        projects={projects}
+        projects={mappedProjects}
         onSelectProject={handleSelectProject}
         onCreateProject={handleCreateProject}
       />
@@ -94,15 +120,17 @@ const App: React.FC = () => {
       case 'dashboard':
         return <Dashboard project={activeProject} />;
       case 'analytics':
-        return <Analytics project={activeProject} />;
+        return <Analytics project={activeProject} userId={userId} />;
       case 'members':
-        return <Members project={activeProject} />;
+        return <Members project={activeProject} userId={userId} />;
       case 'settings':
-        return <Settings project={activeProject} />;
+        return <Settings project={activeProject} userId={userId} onDeleted={handleBackToProjects} />;
       default:
         return <Dashboard project={activeProject} />;
     }
   };
+
+  const sidebarActiveProject = formatProject(activeProject);
 
   return (
     <div className="bg-slate-50 font-sans text-ordo-text">
@@ -111,8 +139,8 @@ const App: React.FC = () => {
         onNavigate={setActivePage}
         collapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed(prev => !prev)}
-        activeProject={activeProject}
-        projects={projects}
+        activeProject={sidebarActiveProject}
+        projects={mappedProjects}
         onSwitchProject={handleSelectProject}
         onBackToProjects={handleBackToProjects}
       />
@@ -135,14 +163,14 @@ const App: React.FC = () => {
 
             {mobileProjectDropdown && (
               <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg py-1 z-50">
-                {projects.map((p) => (
+                {mappedProjects.map((p) => (
                   <button
                     key={p.id}
                     onClick={() => { handleSelectProject(p.id); setMobileProjectDropdown(false); }}
                     className="w-full flex items-center gap-2 px-4 py-3 text-sm text-left hover:bg-gray-50 transition-colors"
                   >
                     <span className="flex-1 truncate text-gray-700">{p.name}</span>
-                    {p.id === activeProject.id && (
+                    {p.id === activeProject._id && (
                       <Check className="w-4 h-4 text-ordo-green shrink-0" />
                     )}
                   </button>

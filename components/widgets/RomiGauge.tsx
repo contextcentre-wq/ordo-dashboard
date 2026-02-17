@@ -24,7 +24,7 @@ const RoasGauge: React.FC<RoasGaugeProps> = ({ value }) => {
   return (
     <div className="bg-white px-4 py-3 md:px-5 md:py-4 rounded-2xl border border-gray-100/80 shadow-md shadow-sky-100/20 h-full flex flex-col">
       <div className="flex justify-between items-center mb-auto">
-        <h3 className="text-gray-500 font-medium text-xs flex items-center gap-1">
+        <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-1">
           ROAS <span className="text-gray-300 cursor-help text-[10px]">&oplus;</span>
         </h3>
         <span className="text-lg font-bold text-gray-900 font-mono">{value}%</span>

@@ -1,65 +1,126 @@
 import React from 'react';
-import { FunnelStage } from '../../types';
-import { useIsMobile } from '../../hooks/useIsMobile';
+import { FunnelStage, AdminMetrics, DoctorMetrics } from '../../types';
 
 interface FunnelChartProps {
   data: FunnelStage[];
+  adminMetrics?: AdminMetrics;
+  doctorMetrics?: DoctorMetrics;
 }
 
-const FunnelChart: React.FC<FunnelChartProps> = ({ data }) => {
-  const isMobile = useIsMobile();
-  const maxValue = Math.max(...data.map(d => d.value));
+function formatNumber(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  return n.toLocaleString();
+}
+
+function conversionColor(rate: number): string {
+  if (rate >= 10) return 'text-ordo-green';
+  if (rate >= 1) return 'text-amber-500';
+  return 'text-gray-400';
+}
+
+const defaultAdminMetrics: AdminMetrics = {
+  appointmentsScheduled: 0,
+  appointmentsAttended: 0,
+  salesCount: 0,
+  conversionToAppointment: 0,
+  conversionToShowUp: 0,
+};
+
+const defaultDoctorMetrics: DoctorMetrics = {
+  averageCheck: 0,
+  conversionToTotal: 0,
+};
+
+const FunnelChart: React.FC<FunnelChartProps> = ({
+  data,
+  adminMetrics = defaultAdminMetrics,
+  doctorMetrics = defaultDoctorMetrics,
+}) => {
+  const maxValue = Math.max(...data.map(d => d.value), 1);
 
   return (
-    <div className="bg-white p-4 md:p-5 rounded-2xl border border-gray-100/80 shadow-md shadow-sky-100/20 h-full w-full flex flex-col">
-      <h3 className="text-gray-500 font-medium mb-3 text-sm">Воронка</h3>
+    <div className="flex flex-col gap-4">
+      <h3 className="text-sm font-semibold text-gray-900">Воронка</h3>
 
-      <div className={`flex flex-col ${isMobile ? 'gap-2' : 'gap-3'} flex-1 justify-center`}>
-        {data.map((item, index) => {
-          const pct = maxValue > 0 ? (item.value / maxValue) * 100 : 0;
-          const barWidth = Math.max(pct, 8);
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Card 1 — Таргетолог */}
+        <div className="bg-white p-4 md:p-5 rounded-2xl border border-gray-100/80 shadow-md shadow-sky-100/20 flex flex-col">
+          <span className="text-sm font-semibold text-gray-900 mb-3">Таргетолог</span>
+          <div className="flex items-end gap-2 flex-1 min-h-[160px]">
+            {data.map((item, index) => {
+              const pct = maxValue > 0 ? (item.value / maxValue) * 100 : 0;
+              const barHeight = Math.max(pct, 6);
 
-          return (
-            <div key={index} className={`flex items-center ${isMobile ? 'gap-2' : 'gap-3'}`}>
-              {/* Label */}
-              <span className={`text-xs text-gray-900 font-bold ${isMobile ? 'w-16' : 'w-24'} text-right shrink-0 truncate`}>
-                {item.label}
-              </span>
-
-              {/* Bar area */}
-              <div className="flex-1 relative">
-                <div className={`w-full ${isMobile ? 'h-9' : 'h-7'} relative flex items-center`}>
-                  {/* Bar fill — tapers from left to right creating a funnel shape */}
+              return (
+                <div key={index} className="flex-1 flex flex-col items-center justify-end h-full">
+                  <span className="text-[10px] font-bold text-gray-700 font-mono mb-1 whitespace-nowrap">
+                    {item.displayValue}
+                  </span>
                   <div
-                    className="h-full rounded-lg bg-gradient-to-r from-ordo-green/80 to-ordo-green/40 transition-all duration-500 flex items-center justify-end pr-2"
-                    style={{ width: `${barWidth}%` }}
-                  >
-                    {barWidth > 20 && (
-                      <span className={`${isMobile ? 'text-xs' : 'text-[10px]'} font-bold text-white/90 font-mono whitespace-nowrap`}>
-                        {item.displayValue}
-                      </span>
-                    )}
-                  </div>
-                  {barWidth <= 20 && (
-                    <span className={`ml-2 ${isMobile ? 'text-xs' : 'text-[10px]'} font-bold text-gray-700 font-mono whitespace-nowrap`}>
-                      {item.displayValue}
-                    </span>
-                  )}
+                    className="w-full rounded-t-md bg-gradient-to-t from-ordo-green/80 to-ordo-green/40 transition-all duration-500 min-h-[4px]"
+                    style={{ height: `${barHeight}%` }}
+                  />
+                  <span className="text-[9px] text-gray-900 font-bold mt-1.5 text-center leading-tight truncate w-full">
+                    {item.label}
+                  </span>
+                  <span className={`text-[9px] font-bold font-mono ${conversionColor(item.conversionRate)}`}>
+                    {item.conversionRate}%
+                  </span>
                 </div>
-              </div>
+              );
+            })}
+          </div>
+        </div>
 
-              {/* Conversion badge */}
-              <span className={`text-xs font-bold font-mono ${isMobile ? 'w-12' : 'w-14'} text-right shrink-0 ${
-                item.conversionRate >= 10 ? 'text-ordo-green' : item.conversionRate >= 1 ? 'text-amber-500' : 'text-gray-400'
-              }`}>
-                {item.conversionRate}%
-              </span>
-            </div>
-          );
-        })}
+        {/* Card 2 — Администратор */}
+        <div className="bg-white p-4 md:p-5 rounded-2xl border border-gray-100/80 shadow-md shadow-sky-100/20 flex flex-col">
+          <span className="text-sm font-semibold text-gray-900 mb-3">Администратор</span>
+          <div className="flex flex-col gap-3 flex-1 justify-center">
+            <MetricRow label="Запись на прием" value={formatNumber(adminMetrics.appointmentsScheduled)} />
+            <MetricRow label="Дошедшие" value={formatNumber(adminMetrics.appointmentsAttended)} />
+            <MetricRow label="Продажи" value={formatNumber(adminMetrics.salesCount)} />
+            <MetricRow
+              label="Конв. в запись"
+              value={`${adminMetrics.conversionToAppointment}%`}
+              valueClassName={conversionColor(adminMetrics.conversionToAppointment)}
+            />
+            <MetricRow
+              label="Конв. в приход"
+              value={`${adminMetrics.conversionToShowUp}%`}
+              valueClassName={conversionColor(adminMetrics.conversionToShowUp)}
+            />
+          </div>
+        </div>
+
+        {/* Card 3 — Врачи/Куратор */}
+        <div className="bg-white p-4 md:p-5 rounded-2xl border border-gray-100/80 shadow-md shadow-sky-100/20 flex flex-col">
+          <span className="text-sm font-semibold text-gray-900 mb-3">Врачи/Куратор</span>
+          <div className="flex flex-col gap-3 flex-1 justify-center">
+            <MetricRow label="Средний чек" value={`$${formatNumber(doctorMetrics.averageCheck)}`} />
+            <MetricRow
+              label="Конверсия в тотал"
+              value={`${doctorMetrics.conversionToTotal}%`}
+              valueClassName={conversionColor(doctorMetrics.conversionToTotal)}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
 };
+
+const MetricRow: React.FC<{
+  label: string;
+  value: string;
+  valueClassName?: string;
+}> = ({ label, value, valueClassName }) => (
+  <div className="flex items-center justify-between py-1.5 border-b border-gray-50 last:border-0">
+    <span className="text-xs text-gray-500">{label}</span>
+    <span className={`text-sm font-bold font-mono ${valueClassName ?? 'text-gray-900'}`}>
+      {value}
+    </span>
+  </div>
+);
 
 export default FunnelChart;

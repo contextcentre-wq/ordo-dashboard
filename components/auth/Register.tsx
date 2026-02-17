@@ -1,11 +1,54 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useMutation } from "convex/react";
+import { api } from "../../convex/_generated/api";
 
 interface RegisterProps {
-    onRegister: () => void;
+    onRegister: (userId: string) => void;
     onSwitchToLogin: () => void;
 }
 
+const ERROR_MESSAGES: [RegExp, string][] = [
+  [/Email already registered/i, 'Этот email уже зарегистрирован'],
+  [/User not found/i, 'Пользователь не найден'],
+  [/Access denied/i, 'Доступ запрещён'],
+];
+
+function humanizeError(err: any): string {
+  const raw = err?.data ?? err?.message ?? '';
+  for (const [pattern, message] of ERROR_MESSAGES) {
+    if (pattern.test(raw)) return message;
+  }
+  return 'Ошибка регистрации';
+}
+
 const Register: React.FC<RegisterProps> = ({ onRegister, onSwitchToLogin }) => {
+  const [name, setName] = useState('');
+  const [company, setCompany] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const registerMutation = useMutation(api.auth.register);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      const fullName = company ? `${name} (${company})` : name;
+      const userId = await registerMutation({
+        email,
+        name: fullName,
+        phone: phone || undefined,
+      });
+      onRegister(userId);
+    } catch (err: any) {
+      setError(humanizeError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#F0F4F8] flex flex-col items-center justify-center p-4">
         <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
@@ -13,53 +56,64 @@ const Register: React.FC<RegisterProps> = ({ onRegister, onSwitchToLogin }) => {
                 <p className="text-gray-500">Создайте аккаунт и начните анализировать</p>
             </div>
 
-            <form onSubmit={(e) => { e.preventDefault(); onRegister(); }} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Ваше имя</label>
-                    <input 
-                        type="text" 
+                    <input
+                        type="text"
                         placeholder="Иван Петров"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
                         className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all bg-gray-50 focus:bg-white text-gray-900 placeholder-gray-400"
-                        required 
+                        required
                     />
                 </div>
-                
+
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Компания</label>
-                    <input 
-                        type="text" 
+                    <input
+                        type="text"
                         placeholder="Мой Бизнес ООО"
+                        value={company}
+                        onChange={(e) => setCompany(e.target.value)}
                         className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all bg-gray-50 focus:bg-white text-gray-900 placeholder-gray-400"
                     />
                 </div>
 
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <input 
-                        type="email" 
+                    <input
+                        type="email"
                         placeholder="name@company.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
                         className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all bg-gray-50 focus:bg-white text-gray-900 placeholder-gray-400"
-                        required 
+                        required
                     />
-                </div>
-                
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Пароль</label>
-                    <input 
-                        type="password" 
-                        placeholder="••••••••"
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all bg-gray-50 focus:bg-white text-gray-900 placeholder-gray-400"
-                        required 
-                    />
-                    <p className="text-xs text-gray-400 mt-1">Минимум 8 символов</p>
                 </div>
 
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Телефон</label>
+                    <input
+                        type="tel"
+                        placeholder="+7 (XXX) XXX XX-XX"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all bg-gray-50 focus:bg-white text-gray-900 placeholder-gray-400"
+                    />
+                </div>
+
+                {error && (
+                  <p className="text-sm text-red-500">{error}</p>
+                )}
+
                 <div className="pt-2">
-                    <button 
-                        type="submit" 
-                        className="w-full py-3.5 bg-ordo-green text-white rounded-xl font-bold text-lg hover:bg-ordo-darkGreen transition-all transform hover:scale-[1.02] shadow-lg shadow-sky-200"
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full py-3.5 bg-ordo-green text-white rounded-xl font-bold text-lg hover:bg-ordo-darkGreen transition-all transform hover:scale-[1.02] shadow-lg shadow-sky-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        Начать работу
+                        {loading ? 'Создание...' : 'Начать работу'}
                     </button>
                 </div>
             </form>
