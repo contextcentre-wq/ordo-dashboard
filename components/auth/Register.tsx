@@ -9,6 +9,7 @@ interface RegisterProps {
 
 const ERROR_MESSAGES: [RegExp, string][] = [
   [/Email already registered/i, 'Этот email уже зарегистрирован'],
+  [/Password too short/i, 'Пароль должен быть не менее 6 символов'],
   [/User not found/i, 'Пользователь не найден'],
   [/Access denied/i, 'Доступ запрещён'],
 ];
@@ -26,6 +27,8 @@ const Register: React.FC<RegisterProps> = ({ onRegister, onSwitchToLogin }) => {
   const [company, setCompany] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const registerMutation = useMutation(api.auth.register);
@@ -33,12 +36,21 @@ const Register: React.FC<RegisterProps> = ({ onRegister, onSwitchToLogin }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    if (password.length < 6) {
+      setError('Пароль должен быть не менее 6 символов');
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError('Пароли не совпадают');
+      return;
+    }
     setLoading(true);
     try {
       const fullName = company ? `${name} (${company})` : name;
       const userId = await registerMutation({
         email,
         name: fullName,
+        password,
         phone: phone || undefined,
       });
       onRegister(userId);
@@ -100,6 +112,32 @@ const Register: React.FC<RegisterProps> = ({ onRegister, onSwitchToLogin }) => {
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all bg-gray-50 focus:bg-white text-gray-900 placeholder-gray-400"
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Пароль</label>
+                    <input
+                        type="password"
+                        placeholder="Минимум 6 символов"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all bg-gray-50 focus:bg-white text-gray-900 placeholder-gray-400"
+                        required
+                        minLength={6}
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Подтвердите пароль</label>
+                    <input
+                        type="password"
+                        placeholder="Повторите пароль"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all bg-gray-50 focus:bg-white text-gray-900 placeholder-gray-400"
+                        required
+                        minLength={6}
                     />
                 </div>
 

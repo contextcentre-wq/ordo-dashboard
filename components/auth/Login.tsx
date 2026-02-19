@@ -9,6 +9,7 @@ interface LoginProps {
 
 const ERROR_MESSAGES: [RegExp, string][] = [
   [/User not found/i, 'Пользователь с таким email не найден'],
+  [/Invalid password/i, 'Неверный пароль'],
   [/Email already registered/i, 'Этот email уже зарегистрирован'],
   [/Access denied/i, 'Доступ запрещён'],
 ];
@@ -23,6 +24,7 @@ function humanizeError(err: any): string {
 
 const Login: React.FC<LoginProps> = ({ onLogin, onSwitchToRegister }) => {
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const loginMutation = useMutation(api.auth.login);
@@ -32,7 +34,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, onSwitchToRegister }) => {
     setError('');
     setLoading(true);
     try {
-      const result = await loginMutation({ email });
+      const result = await loginMutation({ email, password });
       onLogin(result._id);
     } catch (err: any) {
       setError(humanizeError(err));
@@ -48,7 +50,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, onSwitchToRegister }) => {
                 <p className="text-gray-500">Войдите, чтобы продолжить работу</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                     <input
@@ -61,17 +63,31 @@ const Login: React.FC<LoginProps> = ({ onLogin, onSwitchToRegister }) => {
                     />
                 </div>
 
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Пароль</label>
+                    <input
+                        type="password"
+                        placeholder="Введите пароль"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all bg-gray-50 focus:bg-white text-gray-900 placeholder-gray-400"
+                        required
+                    />
+                </div>
+
                 {error && (
                   <p className="text-sm text-red-500">{error}</p>
                 )}
 
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full py-3.5 bg-ordo-green text-white rounded-xl font-bold text-lg hover:bg-ordo-darkGreen transition-all transform hover:scale-[1.02] shadow-lg shadow-sky-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    {loading ? 'Вход...' : 'Войти'}
-                </button>
+                <div className="pt-2">
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full py-3.5 bg-ordo-green text-white rounded-xl font-bold text-lg hover:bg-ordo-darkGreen transition-all transform hover:scale-[1.02] shadow-lg shadow-sky-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {loading ? 'Вход...' : 'Войти'}
+                    </button>
+                </div>
             </form>
 
             <div className="mt-8 pt-6 border-t border-gray-100 text-center">

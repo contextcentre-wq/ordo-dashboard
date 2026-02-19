@@ -9,6 +9,8 @@ export default defineSchema({
     name: v.optional(v.string()),
     phone: v.optional(v.string()),
     avatarUrl: v.optional(v.string()),
+    passwordHash: v.optional(v.string()),
+    salt: v.optional(v.string()),
   }).index("by_email", ["email"]),
 
   members: defineTable({
